@@ -11,6 +11,10 @@ const path = require('path');
 export class HyperledgerService {
   ipAddr = '54.180.104.17';
 
+  toJSONObj(inputString: string) {
+    return JSON.parse(JSON.stringify(JSON.parse(inputString), null, 2));
+  }
+
   async connectGateway(gateway: Gateway, email: string) {
     const data = fs.readFileSync('./network.yaml', 'utf8');
     const yaml = require('js-yaml');

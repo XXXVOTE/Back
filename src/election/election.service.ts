@@ -24,6 +24,14 @@ export class ElectionService {
     try {
       const contract = await this.hyperledger.connectGateway(gateway, email);
 
+      const checkValidity = await contract.submitTransaction(
+        'checkValidCreater',
+      );
+      let validity = this.hyperledger.toJSONObj(checkValidity.toString());
+      if (!validity) {
+        throw new Error(`not valid!`);
+      }
+
       const createdElection = await this.prisma.createElection(
         createElectionDTO.electionName,
         createElectionDTO.startTime,
@@ -31,6 +39,17 @@ export class ElectionService {
         createElectionDTO.electionInfo,
         createElectionDTO.quorum,
       );
+
+      const checkValidityForCandidate = await contract.submitTransaction(
+        'checkValidCandidateCreater',
+        String(createdElection.id),
+      );
+      validity = this.hyperledger.toJSONObj(
+        checkValidityForCandidate.toString(),
+      );
+      if (!validity) {
+        throw new Error(`check validty for create Candidate`);
+      }
 
       const candidatePromise = candidates.map((candidate) =>
         this.prisma.createCandidate(
