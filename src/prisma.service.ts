@@ -15,7 +15,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
   }
 
   async findUserByMail(email: string) {
-    console.log(`email`);
+    // console.log(`email`);
     return await this.user.findUnique({
       where: {
         email,

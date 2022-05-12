@@ -28,7 +28,7 @@ export class ElectionController {
   @UseGuards(JwtAuthGuard)
   @Post(':id')
   vote(@Param('id') electionId, @Request() req) {
-    return this.electionService.vote(req.user.email, electionId, req.hash);
+    return this.electionService.vote(req.user.email, electionId, req.body.hash);
   }
 
   @Get(':id')

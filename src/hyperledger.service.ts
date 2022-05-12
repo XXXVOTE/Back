@@ -9,7 +9,7 @@ const path = require('path');
 
 @Injectable()
 export class HyperledgerService {
-  ipAddr = '3.39.239.193';
+  ipAddr = '54.180.104.17';
 
   async connectGateway(gateway: Gateway, email: string) {
     const data = fs.readFileSync('./network.yaml', 'utf8');
