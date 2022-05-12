@@ -13,6 +13,11 @@ export class AuthService {
     private readonly fabric: HyperledgerService,
     private readonly jwtService: JwtService,
   ) {}
+
+  userData = {
+    email: 'user@uos.ac.kr',
+    enrollSecret: 'enrollSecret',
+  };
   async createUser(email: string, studentNum: string, enrollSecret: string) {
     try {
       const existingUserWithEmail = await this.prisma.findUserByMail(email);
@@ -36,8 +41,12 @@ export class AuthService {
     }
   }
   async validateUser(email: string, enrollSecret: string): Promise<any> {
-    const user = await this.prisma.findUserByMail(email);
-    if (user && user.enrollSecret === enrollSecret) {
+    // const user = await this.prisma.findUserByMail(email);
+    const user = {
+      email,
+      enrollSecret,
+    };
+    if (user && user.enrollSecret === this.userData.enrollSecret) {
       const { enrollSecret, ...result } = user;
       return result;
     }

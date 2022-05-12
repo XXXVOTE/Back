@@ -1,5 +1,6 @@
 import { PrismaService } from 'src/prisma.service';
 import { Injectable } from '@nestjs/common';
+
 import { HyperledgerService } from 'src/hyperledger.service';
 import * as fs from 'fs';
 import { Gateway } from 'fabric-network';
@@ -19,59 +20,53 @@ export class ElectionService {
     createElectionDTO: CreateElectionrDto,
     candidates: [candidateDTO],
   ) {
-    const gateway = new Gateway();
-
-    try {
-      const contract = await this.hyperledger.connectGateway(gateway, email);
-
-      const createdElection = await this.prisma.createElection(
-        createElectionDTO.electionName,
-        createElectionDTO.startTime,
-        createElectionDTO.endTime,
-        createElectionDTO.electionInfo,
-        createElectionDTO.quorum,
-      );
-
-      const candidatePromise = candidates.map((candidate) =>
-        this.prisma.createCandidate(
-          candidate.number,
-          createdElection.id,
-          candidate.profile,
-          candidate.promise,
-        ),
-      );
-
-      await Promise.all(candidatePromise);
-
-      await contract.submitTransaction(
-        'createElection',
-        String(createdElection.id),
-        createElectionDTO.electionName,
-        createElectionDTO.startTime,
-        createElectionDTO.endTime,
-        'none',
-      );
-
-      const candidatesForLedger = candidates.map((candidate) =>
-        contract.submitTransaction(
-          'createCandidates',
-          String(createdElection.id),
-          candidate.profile,
-          String(candidate.number),
-        ),
-      );
-
-      await Promise.all(candidatesForLedger);
-
-      await this.createKey(createdElection.id);
-      await this.saveKey(createdElection.id);
-
-      return createdElection;
-    } catch (err) {
-      console.log(`Failed to run CreateElection: ${err}`);
-    } finally {
-      gateway.disconnect();
-    }
+    console.log(email);
+    console.log(createElectionDTO);
+    console.log(candidates);
+    // const gateway = new Gateway();
+    // try {
+    //   const contract = await this.hyperledger.connectGateway(gateway, email);
+    //   const createdElection = await this.prisma.createElection(
+    //     createElectionDTO.electionName,
+    //     createElectionDTO.startTime,
+    //     createElectionDTO.endTime,
+    //     createElectionDTO.electionInfo,
+    //     createElectionDTO.quorum,
+    //   );
+    //   const candidatePromise = candidates.map((candidate) =>
+    //     this.prisma.createCandidate(
+    //       candidate.number,
+    //       createdElection.id,
+    //       candidate.profile,
+    //       candidate.promise,
+    //     ),
+    //   );
+    //   await Promise.all(candidatePromise);
+    //   await contract.submitTransaction(
+    //     'createElection',
+    //     String(createdElection.id),
+    //     createElectionDTO.electionName,
+    //     createElectionDTO.startTime,
+    //     createElectionDTO.endTime,
+    //     'none',
+    //   );
+    //   const candidatesForLedger = candidates.map((candidate) =>
+    //     contract.submitTransaction(
+    //       'createCandidates',
+    //       String(createdElection.id),
+    //       candidate.profile,
+    //       String(candidate.number),
+    //     ),
+    //   );
+    //   await Promise.all(candidatesForLedger);
+    //   await this.createKey(createdElection.id);
+    //   await this.saveKey(createdElection.id);
+    //   return createdElection;
+    // } catch (err) {
+    //   console.log(`Failed to run CreateElection: ${err}`);
+    // } finally {
+    //   gateway.disconnect();
+    // }
   }
 
   async getElectionFromLedger(email: string, electionID: number) {
