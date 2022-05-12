@@ -39,8 +39,6 @@ export class ElectionController {
   @UseGuards(JwtAuthGuard)
   @Get()
   getElections(@Request() req) {
-    console.log(req.user.email);
-
     return this.electionService.getAllElection();
   }
 }
