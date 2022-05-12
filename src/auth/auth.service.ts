@@ -18,6 +18,7 @@ export class AuthService {
     email: 'user@uos.ac.kr',
     enrollSecret: 'enrollSecret',
   };
+
   async createUser(email: string, studentNum: string, enrollSecret: string) {
     try {
       const existingUserWithEmail = await this.prisma.findUserByMail(email);
