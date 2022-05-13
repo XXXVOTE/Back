@@ -31,9 +31,10 @@ model Election {
 model Candidate {
   election Election @relation(fields: [electionId], references: [id])
   electionId Int
+  candidateName String
+  candidateNumber Int
   profile String
   promise String
-  candidateNumber Int
 
   @@id([electionId, candidateNumber])
 }

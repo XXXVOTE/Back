@@ -41,6 +41,7 @@ export class ElectionService {
         this.prisma.createCandidate(
           candidate.number,
           createdElection.id,
+          candidate.candidateName,
           candidate.profile,
           candidate.promise,
         ),
@@ -136,16 +137,19 @@ export class ElectionService {
         quorum: 100,
         candidates: [
           {
+            candidateName: 'name',
             candidateNumber: 1,
             profile: 'profileURL',
             promise: 'promise for testvote1-candidate1',
           },
           {
+            candidateName: 'name',
             candidateNumber: 2,
             profile: 'profileURL',
             promise: 'promise for testvote1-candidate2',
           },
           {
+            candidateName: 'name',
             candidateNumber: 3,
             profile: 'profileURL',
             promise: 'promise for testvote1-candidate3',
@@ -161,16 +165,19 @@ export class ElectionService {
         quorum: 100,
         candidates: [
           {
+            candidateName: 'name',
             candidateNumber: 1,
             profile: 'profileURL',
             promise: 'promise for testvote2-candidate1',
           },
           {
+            candidateName: 'name',
             candidateNumber: 2,
             profile: 'profileURL',
             promise: 'promise for testvote2-candidate2',
           },
           {
+            candidateName: 'name',
             candidateNumber: 3,
             profile: 'profileURL',
             promise: 'promise for testvote2-candidate3',
@@ -186,16 +193,19 @@ export class ElectionService {
         quorum: 100,
         candidates: [
           {
+            candidateName: 'name',
             candidateNumber: 1,
             profile: 'profileURL',
             promise: 'promise for testvote3-candidate1',
           },
           {
+            candidateName: 'name',
             candidateNumber: 2,
             profile: 'profileURL',
             promise: 'promise for testvote3-candidate2',
           },
           {
+            candidateName: 'name',
             candidateNumber: 3,
             profile: 'profileURL',
             promise: 'promise for testvote3-candidate3',

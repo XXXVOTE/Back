@@ -56,11 +56,13 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
   async createCandidate(
     candidateNumber: number,
     electionId: number,
+    candidateName: string,
     profile: string,
     promise: string,
   ) {
     return this.candidate.create({
       data: {
+        candidateName,
         candidateNumber,
         election: {
           connect: {

@@ -19,6 +19,8 @@ export class candidateDTO {
   @IsNumber()
   number: number;
   @IsString()
+  candidateName: string;
+  @IsString()
   profile: string;
   @IsString()
   promise: string;
