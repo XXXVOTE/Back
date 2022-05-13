@@ -31,6 +31,7 @@ export class ElectionController {
     return this.electionService.vote(req.user.email, electionId, req.body.hash);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   getElection(@Param('id') electionId: number, @Body() body) {
     return this.electionService.getElectionFromLedger(body.email, electionId);
@@ -38,7 +39,7 @@ export class ElectionController {
 
   @UseGuards(JwtAuthGuard)
   @Get()
-  getElections(@Request() req) {
+  getElections() {
     return this.electionService.getAllElection();
   }
 }

@@ -2,7 +2,7 @@ import { PrismaService } from 'src/prisma.service';
 import { Injectable } from '@nestjs/common';
 import { HyperledgerService } from 'src/hyperledger.service';
 import * as fs from 'fs';
-import { Gateway } from 'fabric-network';
+import { Contract, Gateway } from 'fabric-network';
 import { candidateDTO, CreateElectionrDto } from './election.dto';
 import { execSync } from 'child_process';
 import { S3 } from 'aws-sdk';
@@ -24,13 +24,7 @@ export class ElectionService {
     try {
       const contract = await this.hyperledger.connectGateway(gateway, email);
 
-      const checkValidity = await contract.submitTransaction(
-        'checkValidCreater',
-      );
-      let validity = this.hyperledger.toJSONObj(checkValidity.toString());
-      if (!validity) {
-        throw new Error(`not valid!`);
-      }
+      await this.checkElectionValidity(contract);
 
       const createdElection = await this.prisma.createElection(
         createElectionDTO.electionName,
@@ -38,18 +32,10 @@ export class ElectionService {
         createElectionDTO.endTime,
         createElectionDTO.electionInfo,
         createElectionDTO.quorum,
+        createElectionDTO.total,
       );
 
-      const checkValidityForCandidate = await contract.submitTransaction(
-        'checkValidCandidateCreater',
-        String(createdElection.id),
-      );
-      validity = this.hyperledger.toJSONObj(
-        checkValidityForCandidate.toString(),
-      );
-      if (!validity) {
-        throw new Error(`check validty for create Candidate`);
-      }
+      await this.checkCandidateValidity(contract, createdElection.id);
 
       const candidatePromise = candidates.map((candidate) =>
         this.prisma.createCandidate(
@@ -90,6 +76,27 @@ export class ElectionService {
       console.log(`Failed to run CreateElection: ${err}`);
     } finally {
       gateway.disconnect();
+    }
+  }
+
+  async checkElectionValidity(contract: Contract) {
+    const checkValidity = await contract.submitTransaction('checkValidCreater');
+    let validity = this.hyperledger.toJSONObj(checkValidity.toString());
+    if (!validity) {
+      throw new Error(`not valid!`);
+    }
+  }
+
+  async checkCandidateValidity(contract: Contract, electionId: number) {
+    const checkValidityForCandidate = await contract.submitTransaction(
+      'checkValidCandidateCreater',
+      String(electionId),
+    );
+    let validity = this.hyperledger.toJSONObj(
+      checkValidityForCandidate.toString(),
+    );
+    if (!validity) {
+      throw new Error(`check validty for create Candidate`);
     }
   }
 
@@ -237,18 +244,12 @@ export class ElectionService {
 
     s3.upload(encryption, (err: any, data: any) => {
       if (err) throw err;
-      // console.log(`file uploaded! ${data.Location}`);
       execSync(`rm -rf election/electionID-${electionID}/ENCRYPTION.txt`);
     });
     s3.upload(multiplication, (err: any, data: any) => {
       if (err) throw err;
-      // console.log(`file uploaded! ${data.Location}`);
       execSync(`rm -rf election/electionID-${electionID}/MULTIPLICATION.txt`);
     });
-
-    // execSync(
-    //   `rm -rf election/electionID-${electionID}/ENCRYPTION.txt election/electionID-${electionID}/MULTIPLICATION.txt`,
-    // );
   }
 
   async vote(email: string, electionId: number, hash: string) {

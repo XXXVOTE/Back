@@ -39,6 +39,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     endDate: string,
     info: string,
     quorum: number,
+    total: number,
   ) {
     return await this.election.create({
       data: {
@@ -47,6 +48,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
         endDate,
         info,
         quorum,
+        total,
       },
     });
   }

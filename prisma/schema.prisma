@@ -24,6 +24,7 @@ model Election {
   endDate String
   info String
   quorum Int
+  total Int
   candidate Candidate[]
 }
 

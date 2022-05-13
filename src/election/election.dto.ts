@@ -9,6 +9,8 @@ export class CreateElectionrDto {
   endTime: string;
   @IsNumber()
   quorum: number;
+  @IsNumber()
+  total: number;
   @IsString()
   electionInfo: string;
 }

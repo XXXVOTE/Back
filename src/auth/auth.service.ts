@@ -1,7 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
-import { UserService } from 'src/user/user.service';
-import * as bcrypt from 'bcrypt';
 import { HyperledgerService } from 'src/hyperledger.service';
 import { JwtService } from '@nestjs/jwt';
 
@@ -9,7 +7,6 @@ import { JwtService } from '@nestjs/jwt';
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly user: UserService,
     private readonly fabric: HyperledgerService,
     private readonly jwtService: JwtService,
   ) {}
@@ -19,8 +16,6 @@ export class AuthService {
       if (existingUserWithEmail) {
         throw new Error('email is already taken');
       }
-
-      // const hashedSecret = await bcrypt.hash(enrollSecret, 10);
 
       try {
         await this.fabric.registerUser(email, enrollSecret, studentNum);
@@ -39,6 +34,7 @@ export class AuthService {
     const user = await this.prisma.findUserByMail(email);
     if (user && user.enrollSecret === enrollSecret) {
       const { enrollSecret, ...result } = user;
+
       return result;
     }
     return null;

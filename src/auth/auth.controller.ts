@@ -19,7 +19,6 @@ export class AuthController {
 
   @Post('register')
   async register(@Body() req: CreateUserDto) {
-    // console.log(req);
     this.authService.createUser(req.email, req.studentNum, req.enrollSecret);
   }
 }
