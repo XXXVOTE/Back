@@ -23,6 +23,8 @@ export class ElectionService {
     console.log(email);
     console.log(createElectionDTO);
     console.log(candidates);
+
+    return createElectionDTO;
     // const gateway = new Gateway();
     // try {
     //   const contract = await this.hyperledger.connectGateway(gateway, email);

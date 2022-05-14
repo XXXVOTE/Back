@@ -16,7 +16,8 @@ export class AuthService {
 
   userData = {
     email: 'user@uos.ac.kr',
-    enrollSecret: 'enrollSecret',
+    enrollSecret:
+      '$2a$10$l250BIWWMlGAP9m2MgWdwesrTwlLGCc1JAZE8MtjelOFAuLfB3UjO',
   };
 
   async createUser(email: string, studentNum: string, enrollSecret: string) {
@@ -47,7 +48,7 @@ export class AuthService {
       email,
       enrollSecret,
     };
-    if (user && user.enrollSecret === this.userData.enrollSecret) {
+    if (user && bcrypt.compare(enrollSecret, this.userData.enrollSecret)) {
       const { enrollSecret, ...result } = user;
       return result;
     }

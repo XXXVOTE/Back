@@ -39,6 +39,7 @@ export class PrismaService extends PrismaClient /*implements OnModuleInit*/ {
     endDate: string,
     info: string,
     quorum: number,
+    total: number,
   ) {
     return await this.election.create({
       data: {
@@ -47,12 +48,14 @@ export class PrismaService extends PrismaClient /*implements OnModuleInit*/ {
         endDate,
         info,
         quorum,
+        total,
       },
     });
   }
 
   async createCandidate(
     candidateNumber: number,
+    candidateName: string,
     electionId: number,
     profile: string,
     promise: string,
@@ -60,6 +63,7 @@ export class PrismaService extends PrismaClient /*implements OnModuleInit*/ {
     return this.candidate.create({
       data: {
         candidateNumber,
+        candidateName,
         election: {
           connect: {
             id: electionId,
