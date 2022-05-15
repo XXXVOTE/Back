@@ -1,5 +1,5 @@
 import { PrismaService } from 'src/prisma.service';
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { HyperledgerService } from 'src/hyperledger.service';
 import * as fs from 'fs';
 import { Contract, Gateway } from 'fabric-network';
@@ -75,6 +75,8 @@ export class ElectionService {
       return createdElection;
     } catch (err) {
       console.log(`Failed to run CreateElection: ${err}`);
+      throw err;
+      // return err;
     } finally {
       gateway.disconnect();
     }
@@ -84,7 +86,8 @@ export class ElectionService {
     const checkValidity = await contract.submitTransaction('checkValidCreater');
     let validity = this.hyperledger.toJSONObj(checkValidity.toString());
     if (!validity) {
-      throw new Error(`not valid!`);
+      throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
+      // throw new Error({ response: `Forbidden` });
     }
   }
 
@@ -97,7 +100,7 @@ export class ElectionService {
       checkValidityForCandidate.toString(),
     );
     if (!validity) {
-      throw new Error(`check validty for create Candidate`);
+      throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
     }
   }
 
@@ -270,7 +273,9 @@ export class ElectionService {
 
       await contract.submitTransaction('vote', String(electionId), hash);
     } catch (err) {
-      console.log(`Failed to run vote: ${err}`);
+      // console.log(`Failed to run vote: ${err}`);
+
+      throw err;
     } finally {
       gateway.disconnect();
     }

@@ -1,4 +1,10 @@
-import { INestApplication, Injectable, OnModuleInit } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  INestApplication,
+  Injectable,
+  OnModuleInit,
+} from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { Gateway } from 'fabric-network';
 
@@ -9,7 +15,7 @@ const path = require('path');
 
 @Injectable()
 export class HyperledgerService {
-  ipAddr = '54.180.104.17';
+  ipAddr = '54.180.114.133';
 
   toJSONObj(inputString: string) {
     return JSON.parse(JSON.stringify(JSON.parse(inputString), null, 2));
@@ -40,7 +46,10 @@ export class HyperledgerService {
 
       return contract;
     } catch (err) {
-      console.error(`******** FAILED to connect gateway: ${err}`);
+      throw new HttpException(
+        'Failed to connect to HyperLedger',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -56,6 +65,13 @@ export class HyperledgerService {
       );
       // console.log(`Wallet path : ${walletPath}`);
 
+      const checkExisting = await wallet.get(email);
+      if (checkExisting) {
+        throw new HttpException(
+          'Already taken email for Hyperledger',
+          HttpStatus.CONFLICT,
+        );
+      }
       const adminIdentity = await wallet.get('rca-org1-admin');
 
       const provider = wallet
@@ -85,6 +101,7 @@ export class HyperledgerService {
       );
     } catch (err) {
       console.error(`Fail register and for Hyperledger ${err}`);
+      return err;
     }
   }
   async enrollUser(email: string, enrollSecret: string, studentNum: string) {
@@ -121,6 +138,41 @@ export class HyperledgerService {
       await wallet.put(email, x509Identity);
     } catch (err) {
       console.log(`Fail enroll and for Hyperledger ${err}`);
+      throw err;
+    }
+  }
+
+  async addCreateRole(targetEmail: string) {
+    try {
+      const caURL = `https://${this.ipAddr}:8054`;
+      const ca = new FabricCAServices(caURL);
+
+      const wallet = await Wallets.newCouchDBWallet(
+        `http://admin:password@${this.ipAddr}:5984`,
+        'wallet',
+      );
+
+      const adminIdentity = await wallet.get('rca-org1-admin');
+
+      const provider = wallet
+        .getProviderRegistry()
+        .getProvider(adminIdentity.type);
+      const adminUser = await provider.getUserContext(
+        adminIdentity,
+        'rca-org1-admin',
+      );
+
+      const identity = ca.newIdentityService();
+
+      await identity.update(
+        targetEmail,
+        {
+          attrs: [{ name: 'createElection', value: true, ecert: true }],
+        },
+        adminUser,
+      );
+    } catch (err) {
+      throw err;
     }
   }
 }

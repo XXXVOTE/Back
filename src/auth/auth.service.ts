@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
+import * as bcrypt from 'bcrypt';
 import { HyperledgerService } from 'src/hyperledger.service';
 import { JwtService } from '@nestjs/jwt';
 
@@ -14,25 +15,26 @@ export class AuthService {
     try {
       const existingUserWithEmail = await this.prisma.findUserByMail(email);
       if (existingUserWithEmail) {
-        throw new Error('email is already taken');
+        throw new HttpException('email is already taken', HttpStatus.CONFLICT);
       }
 
       try {
         await this.fabric.registerUser(email, enrollSecret, studentNum);
         await this.fabric.enrollUser(email, enrollSecret, studentNum);
       } catch (err) {
-        console.error(`Fail register and enroll for Hyperledger ${err}`);
-        process.exit(1);
+        // console.error(`Fail register and enroll for Hyperledger ${err}`);
+        throw err;
       }
 
       return this.prisma.createUser(email, studentNum, enrollSecret);
     } catch (err) {
       console.log(err);
+      return err;
     }
   }
   async validateUser(email: string, enrollSecret: string): Promise<any> {
     const user = await this.prisma.findUserByMail(email);
-    if (user && user.enrollSecret === enrollSecret) {
+    if (user && bcrypt.compare(user.enrollSecret, enrollSecret)) {
       const { enrollSecret, ...result } = user;
 
       return result;
