@@ -22,8 +22,10 @@ export class ElectionService {
     const gateway = new Gateway();
 
     try {
+      console.log(email);
       const contract = await this.hyperledger.connectGateway(gateway, email);
 
+      await this.checkCandidateValidity(contract, 15);
       await this.checkElectionValidity(contract);
 
       const createdElection = await this.prisma.createElection(
@@ -33,6 +35,15 @@ export class ElectionService {
         createElectionDTO.electionInfo,
         createElectionDTO.quorum,
         createElectionDTO.total,
+      );
+
+      await contract.submitTransaction(
+        'createElection',
+        String(createdElection.id),
+        createElectionDTO.electionName,
+        createElectionDTO.startTime,
+        createElectionDTO.endTime,
+        'none',
       );
 
       await this.checkCandidateValidity(contract, createdElection.id);
@@ -49,21 +60,12 @@ export class ElectionService {
 
       await Promise.all(candidatePromise);
 
-      await contract.submitTransaction(
-        'createElection',
-        String(createdElection.id),
-        createElectionDTO.electionName,
-        createElectionDTO.startTime,
-        createElectionDTO.endTime,
-        'none',
-      );
-
       const candidatesForLedger = candidates.map((candidate) =>
         contract.submitTransaction(
-          'createCandidates',
+          'createCandidate',
+          String(candidate.number),
           String(createdElection.id),
           candidate.profile,
-          String(candidate.number),
         ),
       );
 
@@ -86,7 +88,10 @@ export class ElectionService {
     const checkValidity = await contract.submitTransaction('checkValidCreater');
     let validity = this.hyperledger.toJSONObj(checkValidity.toString());
     if (!validity) {
-      throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
+      throw new HttpException(
+        'checkElectionValidity Forbidden',
+        HttpStatus.FORBIDDEN,
+      );
       // throw new Error({ response: `Forbidden` });
     }
   }
@@ -99,8 +104,12 @@ export class ElectionService {
     let validity = this.hyperledger.toJSONObj(
       checkValidityForCandidate.toString(),
     );
+
     if (!validity) {
-      throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
+      throw new HttpException(
+        'checkCandidateValidity Forbidden',
+        HttpStatus.FORBIDDEN,
+      );
     }
   }
 

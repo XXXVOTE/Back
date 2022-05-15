@@ -15,7 +15,7 @@ const path = require('path');
 
 @Injectable()
 export class HyperledgerService {
-  ipAddr = '54.180.114.133';
+  ipAddr = '3.34.46.225';
 
   toJSONObj(inputString: string) {
     return JSON.parse(JSON.stringify(JSON.parse(inputString), null, 2));
@@ -167,7 +167,7 @@ export class HyperledgerService {
       await identity.update(
         email,
         {
-          attrs: [{ name: 'createElection', value: true, ecert: true }],
+          attrs: [{ name: 'createElection', value: 'true', ecert: true }],
         },
         adminUser,
       );

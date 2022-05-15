@@ -38,7 +38,7 @@ export class AuthService {
   }
   async validateUser(email: string, enrollSecret: string): Promise<any> {
     const user = await this.prisma.findUserByMail(email);
-    if (user && (await bcrypt.compare(user.enrollSecret, enrollSecret))) {
+    if (user && (await bcrypt.compare(enrollSecret, user.enrollSecret))) {
       const { enrollSecret, ...result } = user;
 
       return result;

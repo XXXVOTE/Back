@@ -24,6 +24,6 @@ export class AuthController {
 
   @Post('addCreate')
   async addCreateRole(@Request() req) {
-    this.hyperledger.updateCreateRole(req.body.targetEmail, req.enrollSecret);
+    this.hyperledger.updateCreateRole(req.body.email, req.body.enrollSecret);
   }
 }
