@@ -17,6 +17,6 @@ export class UserService {
   constructor(private prisma: PrismaService) {}
 
   async findUserByMail(email: string) {
-    return this.prisma.findUserByMail(email);
+    // return this.prisma.findUserByMail(email);
   }
 }

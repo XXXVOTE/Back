@@ -22,7 +22,8 @@ export class AuthService {
 
   async createUser(email: string, studentNum: string, enrollSecret: string) {
     try {
-      const existingUserWithEmail = await this.prisma.findUserByMail(email);
+      // const existingUserWithEmail = await this.prisma.findUserByMail(email);
+      const existingUserWithEmail = '';
       if (existingUserWithEmail) {
         throw new Error('email is already taken');
       }
@@ -37,7 +38,7 @@ export class AuthService {
         process.exit(1);
       }
 
-      return this.prisma.createUser(email, studentNum, enrollSecret);
+      // return this.prisma.createUser(email, studentNum, enrollSecret);
     } catch (err) {
       console.log(err);
     }
