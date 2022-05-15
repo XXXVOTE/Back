@@ -142,7 +142,7 @@ export class HyperledgerService {
     }
   }
 
-  async addCreateRole(targetEmail: string) {
+  async updateCreateRole(email: string, enrollSecret: string) {
     try {
       const caURL = `https://${this.ipAddr}:8054`;
       const ca = new FabricCAServices(caURL);
@@ -165,12 +165,33 @@ export class HyperledgerService {
       const identity = ca.newIdentityService();
 
       await identity.update(
-        targetEmail,
+        email,
         {
           attrs: [{ name: 'createElection', value: true, ecert: true }],
         },
         adminUser,
       );
+
+      const enrollment = await ca.enroll({
+        enrollmentID: email,
+        enrollmentSecret: enrollSecret,
+        attr_reqs: [
+          { name: 'enrollId', optional: false },
+          { name: 'department', optional: false },
+          { name: 'createElection', optional: false },
+        ],
+      });
+
+      const x509Identity = {
+        credentials: {
+          certificate: enrollment.certificate,
+          privateKey: enrollment.key.toBytes(),
+        },
+        mspId: 'org1MSP',
+        type: 'X.509',
+      };
+
+      await wallet.put(email, x509Identity);
     } catch (err) {
       throw err;
     }

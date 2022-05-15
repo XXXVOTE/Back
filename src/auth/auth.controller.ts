@@ -1,6 +1,6 @@
 import { Controller, Request, Post, UseGuards, Body } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { PrismaService } from 'src/prisma.service';
+import { HyperledgerService } from 'src/hyperledger.service';
 import { CreateUserDto } from 'src/user/createUser.dto';
 import { AuthService } from './auth.service';
 
@@ -8,7 +8,7 @@ import { AuthService } from './auth.service';
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly prisma: PrismaService,
+    private readonly hyperledger: HyperledgerService,
   ) {}
 
   @UseGuards(AuthGuard('local'))
@@ -20,5 +20,10 @@ export class AuthController {
   @Post('register')
   async register(@Body() req: CreateUserDto) {
     this.authService.createUser(req.email, req.studentNum, req.enrollSecret);
+  }
+
+  @Post('addCreate')
+  async addCreateRole(@Request() req) {
+    this.hyperledger.updateCreateRole(req.body.targetEmail, req.enrollSecret);
   }
 }

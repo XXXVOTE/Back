@@ -26,7 +26,11 @@ export class AuthService {
         throw err;
       }
 
-      return this.prisma.createUser(email, studentNum, enrollSecret);
+      const hashedSecret = await bcrypt.hash(
+        enrollSecret,
+        await bcrypt.genSalt(),
+      );
+      return this.prisma.createUser(email, studentNum, hashedSecret);
     } catch (err) {
       console.log(err);
       return err;
@@ -34,7 +38,7 @@ export class AuthService {
   }
   async validateUser(email: string, enrollSecret: string): Promise<any> {
     const user = await this.prisma.findUserByMail(email);
-    if (user && bcrypt.compare(user.enrollSecret, enrollSecret)) {
+    if (user && (await bcrypt.compare(user.enrollSecret, enrollSecret))) {
       const { enrollSecret, ...result } = user;
 
       return result;
