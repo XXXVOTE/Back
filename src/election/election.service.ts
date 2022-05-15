@@ -11,7 +11,7 @@ import { S3 } from 'aws-sdk';
 export class ElectionService {
   constructor(
     private prisma: PrismaService,
-    private hyperledger: HyperledgerService,
+    private fabric: HyperledgerService,
   ) {}
 
   async createElection(
@@ -23,7 +23,7 @@ export class ElectionService {
 
     try {
       console.log(email);
-      const contract = await this.hyperledger.connectGateway(gateway, email);
+      const contract = await this.fabric.connectGateway(gateway, email);
 
       await this.checkCandidateValidity(contract, 15);
       await this.checkElectionValidity(contract);
@@ -86,7 +86,7 @@ export class ElectionService {
 
   async checkElectionValidity(contract: Contract) {
     const checkValidity = await contract.submitTransaction('checkValidCreater');
-    let validity = this.hyperledger.toJSONObj(checkValidity.toString());
+    let validity = this.fabric.toJSONObj(checkValidity.toString());
     if (!validity) {
       throw new HttpException(
         'checkElectionValidity Forbidden',
@@ -101,9 +101,7 @@ export class ElectionService {
       'checkValidCandidateCreater',
       String(electionId),
     );
-    let validity = this.hyperledger.toJSONObj(
-      checkValidityForCandidate.toString(),
-    );
+    let validity = this.fabric.toJSONObj(checkValidityForCandidate.toString());
 
     if (!validity) {
       throw new HttpException(
@@ -123,7 +121,7 @@ export class ElectionService {
     // const gateway = new Gateway();
 
     // try {
-    //   const contract = await this.hyperledger.connectGateway(gateway, email);
+    //   const contract = await this.fabric.connectGateway(gateway, email);
 
     //   const res = await contract.submitTransaction(
     //     'getElection',
@@ -278,7 +276,7 @@ export class ElectionService {
     const gateway = new Gateway();
 
     try {
-      const contract = await this.hyperledger.connectGateway(gateway, email);
+      const contract = await this.fabric.connectGateway(gateway, email);
 
       await contract.submitTransaction('vote', String(electionId), hash);
     } catch (err) {
