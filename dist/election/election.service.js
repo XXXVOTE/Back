@@ -34,7 +34,6 @@ let ElectionService = class ElectionService {
         try {
             console.log(email);
             const contract = await this.fabric.connectGateway(gateway, email);
-            await this.checkCandidateValidity(contract, 15);
             await this.checkElectionValidity(contract);
             const createdElection = await this.prisma.createElection(createElectionDTO.electionName, createElectionDTO.startTime, createElectionDTO.endTime, createElectionDTO.electionInfo, createElectionDTO.quorum, createElectionDTO.total);
             await contract.submitTransaction('createElection', String(createdElection.id), createElectionDTO.electionName, createElectionDTO.startTime, createElectionDTO.endTime, 'none');
