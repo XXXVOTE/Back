@@ -25,7 +25,6 @@ export class ElectionService {
       console.log(email);
       const contract = await this.fabric.connectGateway(gateway, email);
 
-      await this.checkCandidateValidity(contract, 15);
       await this.checkElectionValidity(contract);
 
       const createdElection = await this.prisma.createElection(
