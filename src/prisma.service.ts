@@ -90,4 +90,12 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
       },
     });
   }
+
+  async getCandidates(electionId: number) {
+    return await this.candidate.findMany({
+      where: {
+        electionId: electionId,
+      },
+    });
+  }
 }

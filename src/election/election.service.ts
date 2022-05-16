@@ -137,93 +137,99 @@ export class ElectionService {
   }
 
   async getAllElection() {
-    return [
-      {
-        id: 1,
-        electionName: 'testvote1',
-        startDate: '2022-05-01 06:00:00',
-        endDate: '2022-05-31 18:00:00',
-        electionInfo: 'election Information for testvote1 Thankyou',
-        quorum: 100,
-        candidates: [
-          {
-            candidateName: 'name',
-            candidateNumber: 1,
-            profile: 'profileURL',
-            promise: 'promise for testvote1-candidate1',
-          },
-          {
-            candidateName: 'name',
-            candidateNumber: 2,
-            profile: 'profileURL',
-            promise: 'promise for testvote1-candidate2',
-          },
-          {
-            candidateName: 'name',
-            candidateNumber: 3,
-            profile: 'profileURL',
-            promise: 'promise for testvote1-candidate3',
-          },
-        ],
-      },
-      {
-        id: 2,
-        electionName: 'testvote2',
-        startDate: '2022-05-01 06:00:00',
-        endDate: '2022-05-31 18:00:00',
-        electionInfo: 'election Information for testvote2 Thankyou',
-        quorum: 100,
-        candidates: [
-          {
-            candidateName: 'name',
-            candidateNumber: 1,
-            profile: 'profileURL',
-            promise: 'promise for testvote2-candidate1',
-          },
-          {
-            candidateName: 'name',
-            candidateNumber: 2,
-            profile: 'profileURL',
-            promise: 'promise for testvote2-candidate2',
-          },
-          {
-            candidateName: 'name',
-            candidateNumber: 3,
-            profile: 'profileURL',
-            promise: 'promise for testvote2-candidate3',
-          },
-        ],
-      },
-      {
-        id: 3,
-        electionName: 'testvote3',
-        startDate: '2022-05-01 06:00:00',
-        endDate: '2022-05-31 18:00:00',
-        electionInfo: 'election Information for testvote3 Thankyou',
-        quorum: 100,
-        candidates: [
-          {
-            candidateName: 'name',
-            candidateNumber: 1,
-            profile: 'profileURL',
-            promise: 'promise for testvote3-candidate1',
-          },
-          {
-            candidateName: 'name',
-            candidateNumber: 2,
-            profile: 'profileURL',
-            promise: 'promise for testvote3-candidate2',
-          },
-          {
-            candidateName: 'name',
-            candidateNumber: 3,
-            profile: 'profileURL',
-            promise: 'promise for testvote3-candidate3',
-          },
-        ],
-      },
-    ];
-    // return this.prisma.getAllElection();
+    // return [
+    //   {
+    //     id: 1,
+    //     electionName: 'testvote1',
+    //     startDate: '2022-05-01 06:00:00',
+    //     endDate: '2022-05-31 18:00:00',
+    //     electionInfo: 'election Information for testvote1 Thankyou',
+    //     quorum: 100,
+    //     candidates: [
+    //       {
+    //         candidateName: 'name',
+    //         candidateNumber: 1,
+    //         profile: 'profileURL',
+    //         promise: 'promise for testvote1-candidate1',
+    //       },
+    //       {
+    //         candidateName: 'name',
+    //         candidateNumber: 2,
+    //         profile: 'profileURL',
+    //         promise: 'promise for testvote1-candidate2',
+    //       },
+    //       {
+    //         candidateName: 'name',
+    //         candidateNumber: 3,
+    //         profile: 'profileURL',
+    //         promise: 'promise for testvote1-candidate3',
+    //       },
+    //     ],
+    //   },
+    //   {
+    //     id: 2,
+    //     electionName: 'testvote2',
+    //     startDate: '2022-05-01 06:00:00',
+    //     endDate: '2022-05-31 18:00:00',
+    //     electionInfo: 'election Information for testvote2 Thankyou',
+    //     quorum: 100,
+    //     candidates: [
+    //       {
+    //         candidateName: 'name',
+    //         candidateNumber: 1,
+    //         profile: 'profileURL',
+    //         promise: 'promise for testvote2-candidate1',
+    //       },
+    //       {
+    //         candidateName: 'name',
+    //         candidateNumber: 2,
+    //         profile: 'profileURL',
+    //         promise: 'promise for testvote2-candidate2',
+    //       },
+    //       {
+    //         candidateName: 'name',
+    //         candidateNumber: 3,
+    //         profile: 'profileURL',
+    //         promise: 'promise for testvote2-candidate3',
+    //       },
+    //     ],
+    //   },
+    //   {
+    //     id: 3,
+    //     electionName: 'testvote3',
+    //     startDate: '2022-05-01 06:00:00',
+    //     endDate: '2022-05-31 18:00:00',
+    //     electionInfo: 'election Information for testvote3 Thankyou',
+    //     quorum: 100,
+    //     candidates: [
+    //       {
+    //         candidateName: 'name',
+    //         candidateNumber: 1,
+    //         profile: 'profileURL',
+    //         promise: 'promise for testvote3-candidate1',
+    //       },
+    //       {
+    //         candidateName: 'name',
+    //         candidateNumber: 2,
+    //         profile: 'profileURL',
+    //         promise: 'promise for testvote3-candidate2',
+    //       },
+    //       {
+    //         candidateName: 'name',
+    //         candidateNumber: 3,
+    //         profile: 'profileURL',
+    //         promise: 'promise for testvote3-candidate3',
+    //       },
+    //     ],
+    //   },
+    // ];
+    let elections = await this.prisma.getAllElection();
+    let ret = [];
+    for await (let ele of elections) {
+      const candidates = await this.prisma.getCandidates(ele.id);
+      ret.push({ ...ele, candidates });
+    }
+    return ret;
   }
 
   async createKey(electionID: number) {
