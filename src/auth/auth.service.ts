@@ -3,6 +3,9 @@ import { PrismaService } from 'src/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { HyperledgerService } from 'src/hyperledger.service';
 import { JwtService } from '@nestjs/jwt';
+import nodemailer from 'nodemailer';
+import ejs from 'ejs';
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class AuthService {
@@ -10,6 +13,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly fabric: HyperledgerService,
     private readonly jwtService: JwtService,
+    private readonly mailService: MailerService,
   ) {}
   async createUser(email: string, studentNum: string, enrollSecret: string) {
     try {
@@ -51,5 +55,18 @@ export class AuthService {
     return {
       accessToken: this.jwtService.sign(payload),
     };
+  }
+
+  async mail(email: string) {
+    let authNum = Math.random().toString().substr(2, 6); // 인증코드 생성(암호화 x, 안전 x, 임시)
+
+    console.log(process.env.NODEMAILER_USER, process.env.NODEMAILER_PASS);
+    await this.mailService.sendMail({
+      from: 'uosvote1@gmail.com',
+      to: email,
+      subject: '회원가입을 위한 인증번호를 입력해주세요.',
+      template: 'authmail',
+      context: { authCode: authNum },
+    });
   }
 }

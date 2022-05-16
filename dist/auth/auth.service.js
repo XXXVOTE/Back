@@ -26,11 +26,13 @@ const prisma_service_1 = require("../prisma.service");
 const bcrypt = require("bcrypt");
 const hyperledger_service_1 = require("../hyperledger.service");
 const jwt_1 = require("@nestjs/jwt");
+const mailer_1 = require("@nestjs-modules/mailer");
 let AuthService = class AuthService {
-    constructor(prisma, fabric, jwtService) {
+    constructor(prisma, fabric, jwtService, mailService) {
         this.prisma = prisma;
         this.fabric = fabric;
         this.jwtService = jwtService;
+        this.mailService = mailService;
     }
     async createUser(email, studentNum, enrollSecret) {
         try {
@@ -67,12 +69,24 @@ let AuthService = class AuthService {
             accessToken: this.jwtService.sign(payload),
         };
     }
+    async mail(email) {
+        let authNum = Math.random().toString().substr(2, 6);
+        console.log(process.env.NODEMAILER_USER, process.env.NODEMAILER_PASS);
+        await this.mailService.sendMail({
+            from: 'uosvote1@gmail.com',
+            to: email,
+            subject: '회원가입을 위한 인증번호를 입력해주세요.',
+            template: 'authmail',
+            context: { authCode: authNum },
+        });
+    }
 };
 AuthService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
         hyperledger_service_1.HyperledgerService,
-        jwt_1.JwtService])
+        jwt_1.JwtService,
+        mailer_1.MailerService])
 ], AuthService);
 exports.AuthService = AuthService;
 //# sourceMappingURL=auth.service.js.map

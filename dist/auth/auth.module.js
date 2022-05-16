@@ -7,6 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthModule = void 0;
+const mailer_1 = require("@nestjs-modules/mailer");
 const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
 const passport_1 = require("@nestjs/passport");
@@ -17,6 +18,7 @@ const auth_controller_1 = require("./auth.controller");
 const auth_service_1 = require("./auth.service");
 const jwt_strategy_1 = require("./jwt.strategy");
 const local_strategy_1 = require("./local.strategy");
+const ejs_adapter_1 = require("@nestjs-modules/mailer/dist/adapters/ejs.adapter");
 let AuthModule = class AuthModule {
 };
 AuthModule = __decorate([
@@ -24,6 +26,25 @@ AuthModule = __decorate([
         imports: [
             passport_1.PassportModule,
             jwt_1.JwtModule.register({ secret: process.env.jwtSecret }),
+            mailer_1.MailerModule.forRoot({
+                transport: {
+                    service: 'gmail',
+                    host: 'smtp.gmail.com',
+                    port: 587,
+                    secure: false,
+                    auth: {
+                        user: process.env.NODEMAILER_USER,
+                        pass: '12##afds',
+                    },
+                },
+                template: {
+                    dir: process.cwd() + '/template/',
+                    adapter: new ejs_adapter_1.EjsAdapter(),
+                    options: {
+                        strict: true,
+                    },
+                },
+            }),
         ],
         controllers: [auth_controller_1.AuthController],
         providers: [

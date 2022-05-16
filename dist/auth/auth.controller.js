@@ -32,6 +32,9 @@ let AuthController = class AuthController {
     async addCreateRole(req) {
         this.hyperledger.updateCreateRole(req.body.email, req.body.enrollSecret);
     }
+    async authenticationMail(req) {
+        this.authService.mail(req.body.email);
+    }
 };
 __decorate([
     (0, common_1.UseGuards)((0, passport_1.AuthGuard)('local')),
@@ -55,6 +58,13 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "addCreateRole", null);
+__decorate([
+    (0, common_1.Post)('authMail'),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "authenticationMail", null);
 AuthController = __decorate([
     (0, common_1.Controller)('auth'),
     __metadata("design:paramtypes", [auth_service_1.AuthService,

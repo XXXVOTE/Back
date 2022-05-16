@@ -10,4 +10,5 @@ export declare class AuthController {
     }>;
     register(req: CreateUserDto): Promise<void>;
     addCreateRole(req: any): Promise<void>;
+    authenticationMail(req: any): Promise<void>;
 }

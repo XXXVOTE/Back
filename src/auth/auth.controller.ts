@@ -26,4 +26,9 @@ export class AuthController {
   async addCreateRole(@Request() req) {
     this.hyperledger.updateCreateRole(req.body.email, req.body.enrollSecret);
   }
+
+  @Post('authMail')
+  async authenticationMail(@Request() req) {
+    this.authService.mail(req.body.email);
+  }
 }
