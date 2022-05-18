@@ -146,6 +146,39 @@ let ElectionService = class ElectionService {
             gateway.disconnect();
         }
     }
+    async getBallots(email, electionId) {
+        const gateway = new fabric_network_1.Gateway();
+        try {
+            const contract = await this.fabric.connectGateway(gateway, email);
+            const res = await contract.submitTransaction('voterList', String(electionId));
+            const ballots = this.fabric.toJSONObj(res.toString());
+            return ballots;
+        }
+        catch (err) {
+            throw err;
+        }
+        finally {
+            gateway.disconnect();
+        }
+    }
+    async getMyBallot(email, electionId) {
+        const gateway = new fabric_network_1.Gateway();
+        try {
+            const contract = await this.fabric.connectGateway(gateway, email);
+            const res = await contract.submitTransaction('getMyVote', String(electionId));
+            if (!res.length) {
+                return null;
+            }
+            const ballots = this.fabric.toJSONObj(res.toString());
+            return ballots;
+        }
+        catch (err) {
+            throw err;
+        }
+        finally {
+            gateway.disconnect();
+        }
+    }
 };
 ElectionService = __decorate([
     (0, common_1.Injectable)(),

@@ -8,6 +8,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ElectionModule = void 0;
 const common_1 = require("@nestjs/common");
+const core_1 = require("@nestjs/core");
+const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
 const hyperledger_service_1 = require("../hyperledger.service");
 const prisma_service_1 = require("../prisma.service");
 const election_controller_1 = require("./election.controller");
@@ -17,7 +19,15 @@ let ElectionModule = class ElectionModule {
 ElectionModule = __decorate([
     (0, common_1.Module)({
         controllers: [election_controller_1.ElectionController],
-        providers: [prisma_service_1.PrismaService, hyperledger_service_1.HyperledgerService, election_service_1.ElectionService],
+        providers: [
+            prisma_service_1.PrismaService,
+            hyperledger_service_1.HyperledgerService,
+            election_service_1.ElectionService,
+            {
+                provide: core_1.APP_GUARD,
+                useClass: jwt_auth_guard_1.JwtAuthGuard,
+            },
+        ],
     })
 ], ElectionModule);
 exports.ElectionModule = ElectionModule;

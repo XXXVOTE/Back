@@ -28,6 +28,7 @@ model Election {
   candidate Candidate[]
 }
 
+
 model Candidate {
   election Election @relation(fields: [electionId], references: [id])
   electionId Int

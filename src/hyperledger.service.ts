@@ -15,7 +15,7 @@ const path = require('path');
 
 @Injectable()
 export class HyperledgerService {
-  ipAddr = '13.209.4.126';
+  ipAddr = process.env.caAddr;
 
   toJSONObj(inputString: string) {
     return JSON.parse(JSON.stringify(JSON.parse(inputString), null, 2));

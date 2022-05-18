@@ -292,4 +292,53 @@ export class ElectionService {
       gateway.disconnect();
     }
   }
+
+  async getBallots(email: string, electionId: number) {
+    const gateway = new Gateway();
+
+    try {
+      const contract = await this.fabric.connectGateway(gateway, email);
+
+      const res = await contract.submitTransaction(
+        'voterList',
+        String(electionId),
+      );
+
+      const ballots = this.fabric.toJSONObj(res.toString());
+
+      return ballots;
+    } catch (err) {
+      // console.log(`Failed to run vote: ${err}`);
+
+      throw err;
+    } finally {
+      gateway.disconnect();
+    }
+  }
+
+  async getMyBallot(email: string, electionId: number) {
+    const gateway = new Gateway();
+
+    try {
+      const contract = await this.fabric.connectGateway(gateway, email);
+
+      const res = await contract.submitTransaction(
+        'getMyVote',
+        String(electionId),
+      );
+      if (!res.length) {
+        return null;
+      }
+
+      const ballots = this.fabric.toJSONObj(res.toString());
+
+      return ballots;
+    } catch (err) {
+      // console.log(`Failed to run vote: ${err}`);
+
+      throw err;
+    } finally {
+      gateway.disconnect();
+    }
+  }
 }
