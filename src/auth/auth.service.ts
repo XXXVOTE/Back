@@ -87,7 +87,7 @@ export class AuthService {
 
         const authNumHash = await bcrypt.hash(authNum+email,parseInt(process.env.saltOrRounds));
 
-        res.cookie('authNum', authNum, {path: '/', expires: new Date(Date.now()+300000)}); // cookie 활성화 경로 설정 필요
+        res.cookie('authNum', authNum, {path: '/authmail', expires: new Date(Date.now()+300000)}); // cookie 활성화 경로 설정 필요
 
         return { result: true, authNum: authNumHash };
     } catch (err) {
