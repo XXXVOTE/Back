@@ -341,4 +341,33 @@ export class ElectionService {
       gateway.disconnect();
     }
   }
+
+  async addBallots(admin: string, electionId: number) {
+    execSync(`mkdir -p election/electionID-${electionId}/cipher`);
+    const ballots = await this.getBallots(admin, electionId);
+    let getBallotFile = ballots.map((ballot) => {
+      // // ipfs.files.get(ballot.hash, (err, files)=> {
+      //   files.forEach((file) =>{
+      //     downloadFile = file.content.toString('utf8')
+      //     //download file save
+      //     fs.writeFileSync(`election/electionID-${electionId}/cipher/${ballots.hash}`, downloadFile, 'utf8', (err)=>{
+      //         if(err) {
+      //             console.log(err);
+      //         }
+      //         console.log('write end');
+      //     })
+      // });
+    });
+
+    await Promise.all(getBallotFile);
+
+    try {
+      execSync(`cd election/electionID-${electionId} && ./UosVote addBallots`);
+      // let res = execSync(`./election/electionID-${electionID}/UosVote saveKey`);
+
+      // console.log(res.toString('utf8'));
+    } catch (err) {
+      console.log('create Key error', err);
+    }
+  }
 }

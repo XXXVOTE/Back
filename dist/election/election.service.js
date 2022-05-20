@@ -179,6 +179,19 @@ let ElectionService = class ElectionService {
             gateway.disconnect();
         }
     }
+    async addBallots(admin, electionId) {
+        (0, child_process_1.execSync)(`mkdir -p election/electionID-${electionId}/cipher`);
+        const ballots = await this.getBallots(admin, electionId);
+        let getBallotFile = ballots.map((ballot) => {
+        });
+        await Promise.all(getBallotFile);
+        try {
+            (0, child_process_1.execSync)(`cd election/electionID-${electionId} && ./UosVote addBallots`);
+        }
+        catch (err) {
+            console.log('create Key error', err);
+        }
+    }
 };
 ElectionService = __decorate([
     (0, common_1.Injectable)(),

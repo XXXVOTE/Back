@@ -14,7 +14,7 @@ const fs = require('fs');
 const path = require('path');
 let HyperledgerService = class HyperledgerService {
     constructor() {
-        this.ipAddr = '54.180.98.117';
+        this.ipAddr = process.env.caAddr;
     }
     toJSONObj(inputString) {
         return JSON.parse(JSON.stringify(JSON.parse(inputString), null, 2));

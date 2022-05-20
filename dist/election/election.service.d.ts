@@ -21,4 +21,5 @@ export declare class ElectionService {
     vote(email: string, electionId: number, hash: string): Promise<void>;
     getBallots(email: string, electionId: number): Promise<any>;
     getMyBallot(email: string, electionId: number): Promise<any>;
+    addBallots(admin: string, electionId: number): Promise<void>;
 }
