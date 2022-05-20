@@ -1,6 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 import { HyperledgerService } from 'src/hyperledger.service';
 import { JwtService } from '@nestjs/jwt';
 import nodemailer from 'nodemailer';
@@ -57,16 +58,70 @@ export class AuthService {
     };
   }
 
-  async mail(email: string) {
-    let authNum = Math.random().toString().substr(2, 6); // 인증코드 생성(암호화 x, 안전 x, 임시)
+  // async mail(email: string) {
+  //   let authNum = Math.random().toString().substr(2, 6); // 인증코드 생성(암호화 x, 안전 x, 임시)
 
-    console.log(process.env.NODEMAILER_USER, process.env.NODEMAILER_PASS);
-    await this.mailService.sendMail({
-      from: 'uosvote1@gmail.com',
-      to: email,
-      subject: '회원가입을 위한 인증번호를 입력해주세요.',
-      template: 'authmail',
-      context: { authCode: authNum },
-    });
+  //   console.log(process.env.NODEMAILER_USER, process.env.NODEMAILER_PASS);
+  //   await this.mailService.sendMail({
+  //     from: 'uosvote1@gmail.com',
+  //     to: email,
+  //     subject: '회원가입을 위한 인증번호를 입력해주세요.',
+  //     template: 'authmail',
+  //     context: { authCode: authNum },
+  //   });
+  // }
+
+  async mail(email: string, res: any) {
+    try {
+        const authNum = Math.floor(100000 + Math.random() * 900000).toString(); // 6자리 인증번호 생성
+
+        await this.mailService.sendMail({
+        from: 'uosvote1@gmail.com',
+        to: email,
+        subject: '[UOSVOTE] 회원가입을 위한 인증번호를 입력해주세요.',
+        template: 'authmail',
+        context: { authCode: authNum },
+        });
+
+        // const authNumHash = await bcrypt.hash(authNum+email,parseInt(process.env.saltOrRounds));
+
+        const authNumHash = await bcrypt.hash(authNum+email,parseInt(process.env.saltOrRounds));
+
+        res.cookie('authNum', authNum, {path: '/', expires: new Date(Date.now()+300000)}); // cookie 활성화 경로 설정 필요
+
+        return { result: true, authNum: authNumHash };
+    } catch (err) {
+        return { result: false, authNum: '' };
+        console.log(err);
+    }
   }
+
+//   const encryptAES = (secretKey: string, plainText: string): string => {
+//     const secretKeyToByteArray: Buffer = Buffer.from(secretKey, 'utf8');
+//     const ivParameter: Buffer = Buffer.from(secretKey.slice(0, 16));
+//     const cipher: crypto.Cipher = crypto.createCipheriv('aes-256-cbc', secretKeyToByteArray, ivParameter);
+//     let encryptedValue: string = cipher.update(plainText, 'utf8', 'base64');
+//     encryptedValue += cipher.final('base64');
+//     return encryptedValue;
+// }
+
+  async emailCertificate(secretKey: string, encryptedValue: string, req: any) {
+    const decryptAES = (secretKey: string, encryptedText: string): string => {
+      const secretKeyToBufferArray: Buffer = Buffer.from(secretKey, 'utf8');
+      const ivParameter: Buffer = Buffer.from(secretKey, 'utf8');
+      const cipher: crypto.Decipher = crypto.createDecipheriv('aes-265-cbc', secretKeyToBufferArray, ivParameter);
+      let decryptedValue: string = cipher.update(encryptedText, 'base64', 'utf8');
+      return decryptedValue;
+    }
+
+    let decryptedValue: string = decryptAES(secretKey, encryptedValue);
+  
+    const result = await bcrypt.compare(decryptedValue, req.cookies.authNum); 
+        if(result) {
+        return {result : "success"}
+        }
+        else {
+            return {result : "failed"}
+        }
+  }  
 }
