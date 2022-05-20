@@ -8,14 +8,6 @@ import { ElectionService } from './election.service';
 
 @Module({
   controllers: [ElectionController],
-  providers: [
-    PrismaService,
-    HyperledgerService,
-    ElectionService,
-    {
-      provide: APP_GUARD,
-      useClass: JwtAuthGuard,
-    },
-  ],
+  providers: [PrismaService, HyperledgerService, ElectionService],
 })
 export class ElectionModule {}

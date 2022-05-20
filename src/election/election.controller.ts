@@ -11,6 +11,7 @@ import {
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { ElectionService } from './election.service';
 
+@UseGuards(JwtAuthGuard)
 @Controller('election')
 export class ElectionController {
   constructor(private readonly electionService: ElectionService) {}
