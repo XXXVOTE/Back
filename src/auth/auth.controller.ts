@@ -1,4 +1,11 @@
-import { Controller, Request, Post, UseGuards, Body } from '@nestjs/common';
+import {
+  Controller,
+  Request,
+  Post,
+  UseGuards,
+  Body,
+  Res,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { HyperledgerService } from 'src/hyperledger.service';
 import { CreateUserDto } from 'src/user/createUser.dto';
@@ -28,7 +35,21 @@ export class AuthController {
   }
 
   @Post('authMail')
-  async authenticationMail(@Request() req) {
-    this.authService.mail(req.body.email);
+  async authenticationMail(@Request() req, @Res({ passthrough: true }) res) {
+    const authNum = await this.authService.mail(req.body.email);
+    res.cookie('authNum', authNum, {
+      path: '/',
+      expires: new Date(Date.now() + 300000),
+    }); // cookie 활성화 경로 설정 필요
+
+    return res.status(201).send();
+  }
+
+  @Post('validateMail')
+  async validateMail(@Request() req) {
+    return this.authService.emailCertificate(
+      req.body.code,
+      req.cookies.authNum,
+    );
   }
 }

@@ -70,15 +70,25 @@ let AuthService = class AuthService {
         };
     }
     async mail(email) {
-        let authNum = Math.random().toString().substr(2, 6);
-        console.log(process.env.NODEMAILER_USER, process.env.NODEMAILER_PASS);
-        await this.mailService.sendMail({
-            from: 'uosvote1@gmail.com',
-            to: email,
-            subject: '회원가입을 위한 인증번호를 입력해주세요.',
-            template: 'authmail',
-            context: { authCode: authNum },
-        });
+        try {
+            const authNum = Math.floor(100000 + Math.random() * 900000).toString();
+            await this.mailService.sendMail({
+                from: 'uosvote1@gmail.com',
+                to: email,
+                subject: '[UOSVOTE] 회원가입을 위한 인증번호를 입력해주세요.',
+                template: 'authmail',
+                context: { authCode: authNum },
+            });
+            const authNumHash = await bcrypt.hash(authNum, await bcrypt.genSalt());
+            return authNumHash;
+        }
+        catch (err) {
+            throw err;
+        }
+    }
+    async emailCertificate(code, authNum) {
+        const result = await bcrypt.compare(code, authNum);
+        return result;
     }
 };
 AuthService = __decorate([

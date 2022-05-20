@@ -13,5 +13,6 @@ export declare class AuthService {
     login(user: any): Promise<{
         accessToken: string;
     }>;
-    mail(email: string): Promise<void>;
+    mail(email: string): Promise<string>;
+    emailCertificate(code: string, authNum: string): Promise<boolean>;
 }
