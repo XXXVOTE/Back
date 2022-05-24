@@ -32,11 +32,7 @@ let ElectionService = class ElectionService {
     async createElection(email, createElectionDTO, candidates) {
         const gateway = new fabric_network_1.Gateway();
         try {
-            const contract = await this.fabric.connectGateway(gateway, email);
-            await this.checkElectionValidity(contract);
             const createdElection = await this.prisma.createElection(createElectionDTO.electionName, createElectionDTO.startTime, createElectionDTO.endTime, createElectionDTO.electionInfo, createElectionDTO.quorum, createElectionDTO.total);
-            await contract.submitTransaction('createElection', String(createdElection.id), createElectionDTO.electionName, createElectionDTO.startTime, createElectionDTO.endTime, 'none');
-            await this.checkCandidateValidity(contract, createdElection.id);
             const s3 = new aws_sdk_1.S3({
                 accessKeyId: process.env.AWS_ACCESS_KEY_ID,
                 secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
@@ -57,10 +53,6 @@ let ElectionService = class ElectionService {
             const candidateProfiles = await Promise.all(candidateProfilesPromise);
             const candidatePromise = candidates.map((candidate, idx) => this.prisma.createCandidate(candidate.number, createdElection.id, candidate.candidateName, candidateProfiles[idx].Location, candidate.candidateInfo));
             await Promise.all(candidatePromise);
-            const candidatesForLedger = candidates.map((candidate, idx) => contract.submitTransaction('createCandidate', String(candidate.number), String(createdElection.id), candidateProfiles[idx].Location));
-            await Promise.all(candidatesForLedger);
-            await this.createKey(createdElection.id);
-            await this.saveKey(createdElection.id);
             return createdElection;
         }
         catch (err) {
@@ -132,12 +124,12 @@ let ElectionService = class ElectionService {
         });
         const encryption = {
             Bucket: 'uosvotepk',
-            Key: `${electionID}-ENCRYPTION.txt`,
+            Key: `election/${electionID}/ENCRYPTION.txt`,
             Body: fs.createReadStream(`election/electionID-${electionID}/ENCRYPTION.txt`),
         };
         const multiplication = {
             Bucket: 'uosvotepk',
-            Key: `${electionID}-MULTIPLICATION.txt`,
+            Key: `election/${electionID}/MULTIPLICATION.txt`,
             Body: fs.createReadStream(`election/electionID-${electionID}/MULTIPLICATION.txt`),
         };
         s3.upload(encryption, (err, data) => {

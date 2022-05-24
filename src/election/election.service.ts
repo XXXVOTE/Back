@@ -22,9 +22,9 @@ export class ElectionService {
     const gateway = new Gateway();
 
     try {
-      const contract = await this.fabric.connectGateway(gateway, email);
+      // const contract = await this.fabric.connectGateway(gateway, email);
 
-      await this.checkElectionValidity(contract);
+      // await this.checkElectionValidity(contract);
 
       const createdElection = await this.prisma.createElection(
         createElectionDTO.electionName,
@@ -35,16 +35,16 @@ export class ElectionService {
         createElectionDTO.total,
       );
 
-      await contract.submitTransaction(
-        'createElection',
-        String(createdElection.id),
-        createElectionDTO.electionName,
-        createElectionDTO.startTime,
-        createElectionDTO.endTime,
-        'none',
-      );
+      // await contract.submitTransaction(
+      //   'createElection',
+      //   String(createdElection.id),
+      //   createElectionDTO.electionName,
+      //   createElectionDTO.startTime,
+      //   createElectionDTO.endTime,
+      //   'none',
+      // );
 
-      await this.checkCandidateValidity(contract, createdElection.id);
+      // await this.checkCandidateValidity(contract, createdElection.id);
 
       const s3 = new S3({
         accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -81,19 +81,19 @@ export class ElectionService {
 
       await Promise.all(candidatePromise);
 
-      const candidatesForLedger = candidates.map((candidate, idx) =>
-        contract.submitTransaction(
-          'createCandidate',
-          String(candidate.number),
-          String(createdElection.id),
-          candidateProfiles[idx].Location,
-        ),
-      );
+      // const candidatesForLedger = candidates.map((candidate, idx) =>
+      //   contract.submitTransaction(
+      //     'createCandidate',
+      //     String(candidate.number),
+      //     String(createdElection.id),
+      //     candidateProfiles[idx].Location,
+      //   ),
+      // );
 
-      await Promise.all(candidatesForLedger);
+      // await Promise.all(candidatesForLedger);
 
-      await this.createKey(createdElection.id);
-      await this.saveKey(createdElection.id);
+      // await this.createKey(createdElection.id);
+      // await this.saveKey(createdElection.id);
 
       return createdElection;
     } catch (err) {
@@ -277,14 +277,14 @@ export class ElectionService {
 
     const encryption = {
       Bucket: 'uosvotepk',
-      Key: `${electionID}-ENCRYPTION.txt`,
+      Key: `election/${electionID}/ENCRYPTION.txt`,
       Body: fs.createReadStream(
         `election/electionID-${electionID}/ENCRYPTION.txt`,
       ),
     };
     const multiplication = {
       Bucket: 'uosvotepk',
-      Key: `${electionID}-MULTIPLICATION.txt`,
+      Key: `election/${electionID}/MULTIPLICATION.txt`,
       Body: fs.createReadStream(
         `election/electionID-${electionID}/MULTIPLICATION.txt`,
       ),
