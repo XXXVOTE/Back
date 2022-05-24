@@ -22,77 +22,80 @@ export class ElectionService {
     const gateway = new Gateway();
 
     try {
-      // const contract = await this.fabric.connectGateway(gateway, email);
+      const contract = await this.fabric.connectGateway(gateway, email);
 
-      // await this.checkElectionValidity(contract);
+      await this.checkElectionValidity(contract);
 
-      // const createdElection = await this.prisma.createElection(
-      //   createElectionDTO.electionName,
-      //   createElectionDTO.startTime,
-      //   createElectionDTO.endTime,
-      //   createElectionDTO.electionInfo,
-      //   createElectionDTO.quorum,
-      //   createElectionDTO.total,
-      // );
+      const createdElection = await this.prisma.createElection(
+        createElectionDTO.electionName,
+        createElectionDTO.startTime,
+        createElectionDTO.endTime,
+        createElectionDTO.electionInfo,
+        createElectionDTO.quorum,
+        createElectionDTO.total,
+      );
 
-      // await contract.submitTransaction(
-      //   'createElection',
-      //   String(createdElection.id),
-      //   createElectionDTO.electionName,
-      //   createElectionDTO.startTime,
-      //   createElectionDTO.endTime,
-      //   'none',
-      // );
+      await contract.submitTransaction(
+        'createElection',
+        String(createdElection.id),
+        createElectionDTO.electionName,
+        createElectionDTO.startTime,
+        createElectionDTO.endTime,
+        'none',
+      );
 
-      // await this.checkCandidateValidity(contract, createdElection.id);
+      await this.checkCandidateValidity(contract, createdElection.id);
 
       const s3 = new S3({
         accessKeyId: process.env.AWS_ACCESS_KEY_ID,
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
       });
-      const candidateProfilesPromise = candidates.map((candidate, idx) =>
-        s3
+      const candidateProfilesPromise = candidates.map((candidate, idx) => {
+        let filecontent = String(candidate.profile);
+        let buf = Buffer.from(
+          filecontent.replace(/^data:image\/\w+;base64,/, ''),
+          'base64',
+        );
+        return s3
           .upload({
             Bucket: 'uosvotepk',
-            Key: `candidate/electionID-${999}/candidate${idx}-profile`,
-            Body: candidate.profile,
+            Key: `candidate/electionID-${createdElection.id}/candidate${idx}-profile`,
+            Body: buf,
             ContentEncoding: 'base64',
             ContentType: 'image/jpeg',
           })
-          .promise(),
-      );
+          .promise();
+      });
 
       const candidateProfiles = await Promise.all(candidateProfilesPromise);
 
-      return candidateProfiles;
+      const candidatePromise = candidates.map((candidate, idx) =>
+        this.prisma.createCandidate(
+          candidate.number,
+          createdElection.id,
+          candidate.candidateName,
+          candidateProfiles[idx].Location,
+          candidate.candidateInfo,
+        ),
+      );
 
-      // const candidatePromise = candidates.map((candidate, idx) =>
-      //   this.prisma.createCandidate(
-      //     candidate.number,
-      //     createdElection.id,
-      //     candidate.candidateName,
-      //     candidateProfiles[idx].Location,
-      //     candidate.promise,
-      //   ),
-      // );
+      await Promise.all(candidatePromise);
 
-      // await Promise.all(candidatePromise);
+      const candidatesForLedger = candidates.map((candidate, idx) =>
+        contract.submitTransaction(
+          'createCandidate',
+          String(candidate.number),
+          String(createdElection.id),
+          candidateProfiles[idx].Location,
+        ),
+      );
 
-      // const candidatesForLedger = candidates.map((candidate, idx) =>
-      //   contract.submitTransaction(
-      //     'createCandidate',
-      //     String(candidate.number),
-      //     String(createdElection.id),
-      //     candidateProfiles[idx].Location,
-      //   ),
-      // );
+      await Promise.all(candidatesForLedger);
 
-      // await Promise.all(candidatesForLedger);
+      await this.createKey(createdElection.id);
+      await this.saveKey(createdElection.id);
 
-      // await this.createKey(createdElection.id);
-      // await this.saveKey(createdElection.id);
-
-      // return createdElection;
+      return createdElection;
     } catch (err) {
       console.log(`Failed to run CreateElection: ${err}`);
       throw err;
