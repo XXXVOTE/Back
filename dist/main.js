@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const common_1 = require("@nestjs/common");
 const core_1 = require("@nestjs/core");
+const cookieParser = require("cookie-parser");
 const app_module_1 = require("./app.module");
 const bodyParser = require("body-parser");
 async function bootstrap() {
@@ -11,6 +12,7 @@ async function bootstrap() {
     app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
     app.enableCors();
     app.setViewEngine('ejs');
+    app.use(cookieParser());
     await app.listen(3001);
 }
 bootstrap();

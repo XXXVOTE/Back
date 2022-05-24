@@ -1,6 +1,7 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import * as cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import * as bodyParser from 'body-parser';
 
@@ -11,6 +12,7 @@ async function bootstrap() {
   app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
   app.enableCors();
   app.setViewEngine('ejs');
+  app.use(cookieParser());
   await app.listen(3001);
 }
 bootstrap();
