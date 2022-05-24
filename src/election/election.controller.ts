@@ -28,12 +28,6 @@ export class ElectionController {
     );
   }
 
-  @Post()
-  @UseInterceptors(FileInterceptor('file'))
-  uploadProfile(@UploadedFile() file) {
-    return this.uploadProfile(file);
-  }
-
   @UseGuards(JwtAuthGuard)
   @Post(':id')
   vote(@Param('id') electionId, @Request() req) {
