@@ -1,3 +1,4 @@
+/// <reference types="multer" />
 export declare class CreateElectionrDto {
     electionName: string;
     startTime: string;
@@ -9,6 +10,6 @@ export declare class CreateElectionrDto {
 export declare class candidateDTO {
     number: number;
     candidateName: string;
-    profile: string;
-    promise: string;
+    profile: Express.Multer.File;
+    candidateInfo: string;
 }

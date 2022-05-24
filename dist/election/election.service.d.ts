@@ -9,6 +9,7 @@ export declare class ElectionService {
     createElection(email: string, createElectionDTO: CreateElectionrDto, candidates: [candidateDTO]): Promise<import(".prisma/client").Election>;
     checkElectionValidity(contract: Contract): Promise<void>;
     checkCandidateValidity(contract: Contract, electionId: number): Promise<void>;
+    uploadCandidateProfile(file: any): Promise<void>;
     getElectionFromLedger(email: string, electionID: number): Promise<{
         id: number;
         electionName: string;

@@ -19,6 +19,7 @@ var __rest = (this && this.__rest) || function (s, e) {
         }
     return t;
 };
+var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
@@ -85,8 +86,7 @@ AuthService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
         hyperledger_service_1.HyperledgerService,
-        jwt_1.JwtService,
-        mailer_1.MailerService])
+        jwt_1.JwtService, typeof (_a = typeof mailer_1.MailerService !== "undefined" && mailer_1.MailerService) === "function" ? _a : Object])
 ], AuthService);
 exports.AuthService = AuthService;
 //# sourceMappingURL=auth.service.js.map

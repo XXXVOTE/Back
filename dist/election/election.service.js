@@ -32,15 +32,32 @@ let ElectionService = class ElectionService {
     async createElection(email, createElectionDTO, candidates) {
         const gateway = new fabric_network_1.Gateway();
         try {
-            console.log(email);
             const contract = await this.fabric.connectGateway(gateway, email);
             await this.checkElectionValidity(contract);
             const createdElection = await this.prisma.createElection(createElectionDTO.electionName, createElectionDTO.startTime, createElectionDTO.endTime, createElectionDTO.electionInfo, createElectionDTO.quorum, createElectionDTO.total);
             await contract.submitTransaction('createElection', String(createdElection.id), createElectionDTO.electionName, createElectionDTO.startTime, createElectionDTO.endTime, 'none');
             await this.checkCandidateValidity(contract, createdElection.id);
-            const candidatePromise = candidates.map((candidate) => this.prisma.createCandidate(candidate.number, createdElection.id, candidate.candidateName, candidate.profile, candidate.promise));
+            const s3 = new aws_sdk_1.S3({
+                accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+                secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+            });
+            const candidateProfilesPromise = candidates.map((candidate, idx) => {
+                let filecontent = String(candidate.profile);
+                let buf = Buffer.from(filecontent.replace(/^data:image\/\w+;base64,/, ''), 'base64');
+                return s3
+                    .upload({
+                    Bucket: 'uosvotepk',
+                    Key: `candidate/electionID-${createdElection.id}/candidate${idx}-profile`,
+                    Body: buf,
+                    ContentEncoding: 'base64',
+                    ContentType: 'image/jpeg',
+                })
+                    .promise();
+            });
+            const candidateProfiles = await Promise.all(candidateProfilesPromise);
+            const candidatePromise = candidates.map((candidate, idx) => this.prisma.createCandidate(candidate.number, createdElection.id, candidate.candidateName, candidateProfiles[idx].Location, candidate.candidateInfo));
             await Promise.all(candidatePromise);
-            const candidatesForLedger = candidates.map((candidate) => contract.submitTransaction('createCandidate', String(candidate.number), String(createdElection.id), candidate.profile));
+            const candidatesForLedger = candidates.map((candidate, idx) => contract.submitTransaction('createCandidate', String(candidate.number), String(createdElection.id), candidateProfiles[idx].Location));
             await Promise.all(candidatesForLedger);
             await this.createKey(createdElection.id);
             await this.saveKey(createdElection.id);
@@ -68,6 +85,7 @@ let ElectionService = class ElectionService {
             throw new common_1.HttpException('checkCandidateValidity Forbidden', common_1.HttpStatus.FORBIDDEN);
         }
     }
+    async uploadCandidateProfile(file) { }
     async getElectionFromLedger(email, electionID) {
         return {
             id: 1,

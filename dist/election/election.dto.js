@@ -50,11 +50,11 @@ __decorate([
 ], candidateDTO.prototype, "candidateName", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
+    __metadata("design:type", Object)
 ], candidateDTO.prototype, "profile", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
-], candidateDTO.prototype, "promise", void 0);
+], candidateDTO.prototype, "candidateInfo", void 0);
 exports.candidateDTO = candidateDTO;
 //# sourceMappingURL=election.dto.js.map
