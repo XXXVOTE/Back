@@ -22,7 +22,6 @@ export class ElectionService {
     const gateway = new Gateway();
 
     try {
-      console.log(email);
       const contract = await this.fabric.connectGateway(gateway, email);
 
       await this.checkElectionValidity(contract);
@@ -47,24 +46,47 @@ export class ElectionService {
 
       await this.checkCandidateValidity(contract, createdElection.id);
 
-      const candidatePromise = candidates.map((candidate) =>
+      const s3 = new S3({
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      });
+      const candidateProfilesPromise = candidates.map((candidate, idx) => {
+        let filecontent = String(candidate.profile);
+        let buf = Buffer.from(
+          filecontent.replace(/^data:image\/\w+;base64,/, ''),
+          'base64',
+        );
+        return s3
+          .upload({
+            Bucket: 'uosvotepk',
+            Key: `candidate/electionID-${createdElection.id}/candidate${idx}-profile`,
+            Body: buf,
+            ContentEncoding: 'base64',
+            ContentType: 'image/jpeg',
+          })
+          .promise();
+      });
+
+      const candidateProfiles = await Promise.all(candidateProfilesPromise);
+
+      const candidatePromise = candidates.map((candidate, idx) =>
         this.prisma.createCandidate(
           candidate.number,
           createdElection.id,
           candidate.candidateName,
-          candidate.profile,
-          candidate.promise,
+          candidateProfiles[idx].Location,
+          candidate.candidateInfo,
         ),
       );
 
       await Promise.all(candidatePromise);
 
-      const candidatesForLedger = candidates.map((candidate) =>
+      const candidatesForLedger = candidates.map((candidate, idx) =>
         contract.submitTransaction(
           'createCandidate',
           String(candidate.number),
           String(createdElection.id),
-          candidate.profile,
+          candidateProfiles[idx].Location,
         ),
       );
 
@@ -110,6 +132,7 @@ export class ElectionService {
     }
   }
 
+  async uploadCandidateProfile(file: any) {}
   async getElectionFromLedger(email: string, electionID: number) {
     return {
       id: 1,

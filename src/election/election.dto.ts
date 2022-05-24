@@ -21,7 +21,7 @@ export class candidateDTO {
   @IsString()
   candidateName: string;
   @IsString()
-  profile: string;
+  profile: Express.Multer.File;
   @IsString()
-  promise: string;
+  candidateInfo: string;
 }
