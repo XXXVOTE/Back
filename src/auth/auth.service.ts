@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import * as bcrypt from 'bcrypt';
-import * as crypto from 'crypto';
+import crypto from 'crypto-js';
 import { HyperledgerService } from 'src/hyperledger.service';
 import { JwtService } from '@nestjs/jwt';
 import nodemailer from 'nodemailer';
@@ -72,6 +72,7 @@ export class AuthService {
   // }
 
   async mail(email: string) {
+    var CryptoJS = require("crypto-js");
     try {
       const authNum = Math.floor(100000 + Math.random() * 900000).toString(); // 6자리 인증번호 생성
 
@@ -85,8 +86,10 @@ export class AuthService {
 
       // const authNumHash = await bcrypt.hash(authNum+email,parseInt(process.env.saltOrRounds));
 
-      const authNumHash = await bcrypt.hash(authNum, await bcrypt.genSalt());
+      // const authNumHash = await bcrypt.hash(authNum, await bcrypt.genSalt());
 
+      const authNumHash = CryptoJS.AES.encrypt(authNum, process.env.SECRETKEY).toString();
+      console.log(authNumHash);
       return authNumHash;
     } catch (err) {
       throw err;
@@ -123,7 +126,9 @@ export class AuthService {
   //   }
   // }
 
-  async emailCertificate(code: string, authNum: string) {
+  async emailCertificate(code: string, authNumHash: string) {
+    // 입력코드, 해시값 주면 검증
+    var CryptoJS = require("crypto-js");
     // const decryptAES = (secretKey: string, encryptedText: string): string => {
     //   const secretKeyToBufferArray: Buffer = Buffer.from(secretKey, 'utf8');
     //   const ivParameter: Buffer = Buffer.from(secretKey, 'utf8');
@@ -142,8 +147,16 @@ export class AuthService {
 
     // let decryptedValue: string = decryptAES(secretKey, encryptedValue);
 
-    const result = await bcrypt.compare(code, authNum);
+    // Decrypt
+    var bytes  = CryptoJS.AES.decrypt(authNumHash, process.env.SECRETKEY);
+    var originalText = bytes.toString(CryptoJS.enc.Utf8);
 
-    return result;
+    console.log(originalText);
+
+    return (code === originalText);
+
+    // const result = await bcrypt.compare(code, authNum);
+
+    // return result;
   }
 }
