@@ -70,6 +70,7 @@ let AuthService = class AuthService {
         };
     }
     async mail(email) {
+        var CryptoJS = require("crypto-js");
         try {
             const authNum = Math.floor(100000 + Math.random() * 900000).toString();
             await this.mailService.sendMail({
@@ -79,16 +80,19 @@ let AuthService = class AuthService {
                 template: 'authmail',
                 context: { authCode: authNum },
             });
-            const authNumHash = await bcrypt.hash(authNum, await bcrypt.genSalt());
+            const authNumHash = CryptoJS.AES.encrypt(authNum, process.env.SECRETKEY).toString();
             return authNumHash;
         }
         catch (err) {
             throw err;
         }
     }
-    async emailCertificate(code, authNum) {
-        const result = await bcrypt.compare(code, authNum);
-        return result;
+    async emailCertificate(code, authNumHash) {
+        var CryptoJS = require("crypto-js");
+        var bytes = CryptoJS.AES.decrypt(authNumHash, process.env.SECRETKEY);
+        var originalText = bytes.toString(CryptoJS.enc.Utf8);
+        console.log(originalText);
+        return (code == originalText);
     }
 };
 AuthService = __decorate([

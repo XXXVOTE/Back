@@ -13,6 +13,6 @@ export declare class AuthService {
     login(user: any): Promise<{
         accessToken: string;
     }>;
-    mail(email: string): Promise<string>;
-    emailCertificate(code: string, authNum: string): Promise<boolean>;
+    mail(email: string): Promise<any>;
+    emailCertificate(code: string, authNumHash: string): Promise<boolean>;
 }

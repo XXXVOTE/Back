@@ -89,7 +89,6 @@ export class AuthService {
       // const authNumHash = await bcrypt.hash(authNum, await bcrypt.genSalt());
 
       const authNumHash = CryptoJS.AES.encrypt(authNum, process.env.SECRETKEY).toString();
-      console.log(authNumHash);
       return authNumHash;
     } catch (err) {
       throw err;
@@ -153,7 +152,7 @@ export class AuthService {
 
     console.log(originalText);
 
-    return (code === originalText);
+    return (code == originalText);
 
     // const result = await bcrypt.compare(code, authNum);
 

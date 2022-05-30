@@ -38,7 +38,7 @@ let AuthController = class AuthController {
             path: '/',
             expires: new Date(Date.now() + 300000),
         });
-        return res.status(201).send();
+        return;
     }
     async validateMail(req) {
         return this.authService.emailCertificate(req.body.code, req.cookies.authNum);

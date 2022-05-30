@@ -42,7 +42,7 @@ export class AuthController {
       expires: new Date(Date.now() + 300000),
     }); // cookie 활성화 경로 설정 필요
 
-    return res.status(201).send();
+    return;
   }
 
   @Post('validateMail')
