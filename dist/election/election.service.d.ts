@@ -9,19 +9,14 @@ export declare class ElectionService {
     createElection(email: string, createElectionDTO: CreateElectionrDto, candidates: [candidateDTO]): Promise<import(".prisma/client").Election>;
     checkElectionValidity(contract: Contract): Promise<void>;
     checkCandidateValidity(contract: Contract, electionId: number): Promise<void>;
-    uploadCandidateProfile(file: any): Promise<void>;
-    getElectionFromLedger(email: string, electionID: number): Promise<{
-        id: number;
-        electionName: string;
-        startDate: string;
-        endDate: string;
-    }>;
-    getAllElection(): Promise<any[]>;
+    getElectionFromLedger(email: string, electionID: number): Promise<string>;
+    getAllElection(email: string): Promise<any[]>;
     createKey(electionID: number): Promise<void>;
     saveKey(electionID: number): Promise<void>;
     vote(email: string, electionId: number, hash: string): Promise<void>;
     getBallots(email: string, electionId: number): Promise<any>;
     getMyBallot(email: string, electionId: number): Promise<any>;
+    getVoterNum(email: string, electionId: number): Promise<any>;
     addBallots(admin: string, electionId: number): Promise<void>;
     decryptResult(electionId: number): Promise<string[]>;
 }

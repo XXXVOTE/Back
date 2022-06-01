@@ -33,15 +33,12 @@ export class HyperledgerService {
     );
 
     try {
-      // console.log(email, wallet.get(email));
       await gateway.connect(ccp, {
         wallet: wallet,
         identity: email,
         discovery: { enabled: false, asLocalhost: false },
       });
-
       const network = await gateway.getNetwork('mychannel');
-
       const contract = network.getContract('votecc');
 
       return contract;

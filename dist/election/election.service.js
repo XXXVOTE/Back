@@ -86,16 +86,21 @@ let ElectionService = class ElectionService {
             throw new common_1.HttpException('checkCandidateValidity Forbidden', common_1.HttpStatus.FORBIDDEN);
         }
     }
-    async uploadCandidateProfile(file) { }
     async getElectionFromLedger(email, electionID) {
-        return {
-            id: 1,
-            electionName: 'testvote1',
-            startDate: '2022-05-01',
-            endDate: '2022-05-31',
-        };
+        const gateway = new fabric_network_1.Gateway();
+        try {
+            const contract = await this.fabric.connectGateway(gateway, email);
+            const res = await contract.submitTransaction('getElection', String(electionID));
+            return JSON.stringify(JSON.parse(res.toString()), null, 2);
+        }
+        catch (err) {
+            console.log(`Failed to run getElection: ${err}`);
+        }
+        finally {
+            gateway.disconnect();
+        }
     }
-    async getAllElection() {
+    async getAllElection(email) {
         var e_1, _a;
         let elections = await this.prisma.getAllElection();
         let ret = [];
@@ -103,7 +108,8 @@ let ElectionService = class ElectionService {
             for (var elections_1 = __asyncValues(elections), elections_1_1; elections_1_1 = await elections_1.next(), !elections_1_1.done;) {
                 let ele = elections_1_1.value;
                 const candidates = await this.prisma.getCandidates(ele.id);
-                ret.push(Object.assign(Object.assign({}, ele), { candidates }));
+                const now = await this.getVoterNum(email, ele.id);
+                ret.push(Object.assign(Object.assign({}, ele), { candidates, now }));
             }
         }
         catch (e_1_1) { e_1 = { error: e_1_1 }; }
@@ -190,6 +196,24 @@ let ElectionService = class ElectionService {
             }
             const ballots = this.fabric.toJSONObj(res.toString());
             return ballots;
+        }
+        catch (err) {
+            throw err;
+        }
+        finally {
+            gateway.disconnect();
+        }
+    }
+    async getVoterNum(email, electionId) {
+        const gateway = new fabric_network_1.Gateway();
+        try {
+            const contract = await this.fabric.connectGateway(gateway, email);
+            const res = await contract.submitTransaction('voterNum', String(electionId));
+            if (!res.length) {
+                return null;
+            }
+            const now = this.fabric.toJSONObj(res.toString());
+            return now;
         }
         catch (err) {
             throw err;

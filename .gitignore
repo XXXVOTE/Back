@@ -1,8 +1,9 @@
 #environment
 .env
+crypto-config
 
 # compiled output
-# /dist
+/dist
 /node_modules
 /election
 # Logs

@@ -38,6 +38,11 @@ export class ElectionController {
     return this.electionService.getMyBallot(req.user.email, electionId);
   }
 
+  @Get('/voterNum/:id')
+  getVoterNum(@Param('id') electionId: number, @Request() req) {
+    return this.electionService.getVoterNum(req.user.email, electionId);
+  }
+
   @Post('/addballot/:id')
   addBallot(@Param('id') electionId: number, @Request() req) {
     return this.electionService.addBallots(req.user.email, electionId);
@@ -54,12 +59,15 @@ export class ElectionController {
   }
 
   @Get('/:id')
-  getElection(@Param('id') electionId: number, @Body() body) {
-    return this.electionService.getElectionFromLedger(body.email, electionId);
+  getElection(@Param('id') electionId: number, @Request() req) {
+    return this.electionService.getElectionFromLedger(
+      req.user.email,
+      electionId,
+    );
   }
 
   @Get()
-  getElections() {
-    return this.electionService.getAllElection();
+  getElections(@Request() req) {
+    return this.electionService.getAllElection(req.user.email);
   }
 }
