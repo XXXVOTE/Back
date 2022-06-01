@@ -29,6 +29,12 @@ let ElectionController = class ElectionController {
     getBallot(electionId, req) {
         return this.electionService.getMyBallot(req.user.email, electionId);
     }
+    addBallot(electionId, req) {
+        return this.electionService.addBallots(req.user.email, electionId);
+    }
+    decrypt(electionId, req) {
+        return this.electionService.decryptResult(electionId);
+    }
     vote(electionId, req) {
         return this.electionService.vote(req.user.email, electionId, req.body.hash);
     }
@@ -62,6 +68,22 @@ __decorate([
     __metadata("design:paramtypes", [Number, Object]),
     __metadata("design:returntype", void 0)
 ], ElectionController.prototype, "getBallot", null);
+__decorate([
+    (0, common_1.Post)('/addballot/:id'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Object]),
+    __metadata("design:returntype", void 0)
+], ElectionController.prototype, "addBallot", null);
+__decorate([
+    (0, common_1.Post)('/decryptResult/:id'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Object]),
+    __metadata("design:returntype", void 0)
+], ElectionController.prototype, "decrypt", null);
 __decorate([
     (0, common_1.Post)('/:id'),
     __param(0, (0, common_1.Param)('id')),

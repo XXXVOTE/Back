@@ -6,6 +6,7 @@ import { Contract, Gateway } from 'fabric-network';
 import { candidateDTO, CreateElectionrDto } from './election.dto';
 import { execSync } from 'child_process';
 import { S3 } from 'aws-sdk';
+import axios from 'axios';
 
 @Injectable()
 export class ElectionService {
@@ -277,14 +278,14 @@ export class ElectionService {
 
     const encryption = {
       Bucket: 'uosvotepk',
-      Key: `${electionID}-ENCRYPTION.txt`,
+      Key: `election/${electionID}/${electionID}-ENCRYPTION.txt`,
       Body: fs.createReadStream(
         `election/electionID-${electionID}/ENCRYPTION.txt`,
       ),
     };
     const multiplication = {
       Bucket: 'uosvotepk',
-      Key: `${electionID}-MULTIPLICATION.txt`,
+      Key: `election/${electionID}/${electionID}-MULTIPLICATION.txt`,
       Body: fs.createReadStream(
         `election/electionID-${electionID}/MULTIPLICATION.txt`,
       ),
@@ -366,20 +367,42 @@ export class ElectionService {
   }
 
   async addBallots(admin: string, electionId: number) {
+    const s3 = new S3({
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    });
+
+    s3.getObject(
+      { Bucket: 'uosvotepk', Key: `${electionId}-ENCRYPTION.txt` },
+      (err, data) => {
+        if (err) {
+          throw err;
+        }
+        fs.writeFileSync(
+          `election/electionID-${electionId}/ENCRYPTION.txt`,
+          data.Body.toString(),
+        );
+      },
+    );
     execSync(`mkdir -p election/electionID-${electionId}/cipher`);
-    const ballots = await this.getBallots(admin, electionId);
-    let getBallotFile = ballots.map((ballot) => {
-      // // ipfs.files.get(ballot.hash, (err, files)=> {
-      //   files.forEach((file) =>{
-      //     downloadFile = file.content.toString('utf8')
-      //     //download file save
-      //     fs.writeFileSync(`election/electionID-${electionId}/cipher/${ballots.hash}`, downloadFile, 'utf8', (err)=>{
-      //         if(err) {
-      //             console.log(err);
-      //         }
-      //         console.log('write end');
-      //     })
-      // });
+
+    // const { BallotHash: ballots } = await this.getBallots(admin, electionId);
+    // console.log(ballots);
+    const ballots = ['QmdQvg3uDjj13HcGY5stjqYfQu31FFpRBTKYsmYAFtcAj7'];
+
+    let getBallotFile = ballots.map((ballot, index) => {
+      const url = `https://gateway.pinata.cloud/ipfs/${ballot}`;
+      return axios({
+        method: 'get',
+        url,
+        responseType: 'stream',
+      }).then((response) =>
+        response.data.pipe(
+          fs.createWriteStream(
+            `election/electionID-${electionId}/cipher/ballot${index}`,
+          ),
+        ),
+      );
     });
 
     await Promise.all(getBallotFile);
@@ -392,5 +415,18 @@ export class ElectionService {
     } catch (err) {
       console.log('create Key error', err);
     }
+  }
+
+  async decryptResult(electionId: number) {
+    execSync(`cd election/electionID-${electionId} && ./UosVote decryptResult`);
+
+    const result = fs
+      .readFileSync(`election/electionID-${electionId}/ResultVec`)
+      .toString()
+      .split(' ');
+
+    console.log(result);
+
+    return result;
   }
 }

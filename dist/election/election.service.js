@@ -24,6 +24,7 @@ const fs = require("fs");
 const fabric_network_1 = require("fabric-network");
 const child_process_1 = require("child_process");
 const aws_sdk_1 = require("aws-sdk");
+const axios_1 = require("axios");
 let ElectionService = class ElectionService {
     constructor(prisma, fabric) {
         this.prisma = prisma;
@@ -132,12 +133,12 @@ let ElectionService = class ElectionService {
         });
         const encryption = {
             Bucket: 'uosvotepk',
-            Key: `${electionID}-ENCRYPTION.txt`,
+            Key: `election/${electionID}/${electionID}-ENCRYPTION.txt`,
             Body: fs.createReadStream(`election/electionID-${electionID}/ENCRYPTION.txt`),
         };
         const multiplication = {
             Bucket: 'uosvotepk',
-            Key: `${electionID}-MULTIPLICATION.txt`,
+            Key: `election/${electionID}/${electionID}-MULTIPLICATION.txt`,
             Body: fs.createReadStream(`election/electionID-${electionID}/MULTIPLICATION.txt`),
         };
         s3.upload(encryption, (err, data) => {
@@ -198,9 +199,25 @@ let ElectionService = class ElectionService {
         }
     }
     async addBallots(admin, electionId) {
+        const s3 = new aws_sdk_1.S3({
+            accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+        });
+        s3.getObject({ Bucket: 'uosvotepk', Key: `${electionId}-ENCRYPTION.txt` }, (err, data) => {
+            if (err) {
+                throw err;
+            }
+            fs.writeFileSync(`election/electionID-${electionId}/ENCRYPTION.txt`, data.Body.toString());
+        });
         (0, child_process_1.execSync)(`mkdir -p election/electionID-${electionId}/cipher`);
-        const ballots = await this.getBallots(admin, electionId);
-        let getBallotFile = ballots.map((ballot) => {
+        const ballots = ['QmdQvg3uDjj13HcGY5stjqYfQu31FFpRBTKYsmYAFtcAj7'];
+        let getBallotFile = ballots.map((ballot, index) => {
+            const url = `https://gateway.pinata.cloud/ipfs/${ballot}`;
+            return (0, axios_1.default)({
+                method: 'get',
+                url,
+                responseType: 'stream',
+            }).then((response) => response.data.pipe(fs.createWriteStream(`election/electionID-${electionId}/cipher/ballot${index}`)));
         });
         await Promise.all(getBallotFile);
         try {
@@ -209,6 +226,15 @@ let ElectionService = class ElectionService {
         catch (err) {
             console.log('create Key error', err);
         }
+    }
+    async decryptResult(electionId) {
+        (0, child_process_1.execSync)(`cd election/electionID-${electionId} && ./UosVote decryptResult`);
+        const result = fs
+            .readFileSync(`election/electionID-${electionId}/ResultVec`)
+            .toString()
+            .split(' ');
+        console.log(result);
+        return result;
     }
 };
 ElectionService = __decorate([

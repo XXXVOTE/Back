@@ -23,4 +23,5 @@ export declare class ElectionService {
     getBallots(email: string, electionId: number): Promise<any>;
     getMyBallot(email: string, electionId: number): Promise<any>;
     addBallots(admin: string, electionId: number): Promise<void>;
+    decryptResult(electionId: number): Promise<string[]>;
 }
