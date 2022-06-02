@@ -214,16 +214,19 @@ let ElectionService = class ElectionService {
             accessKeyId: process.env.AWS_ACCESS_KEY_ID,
             secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
         });
-        s3.getObject({ Bucket: 'uosvotepk', Key: `${electionId}-ENCRYPTION.txt` }, (err, data) => {
+        s3.getObject({
+            Bucket: 'uosvotepk',
+            Key: `election/${electionId}/${electionId}-ENCRYPTION.txt`,
+        }, (err, data) => {
             if (err) {
                 throw err;
             }
             fs.writeFileSync(`election/electionID-${electionId}/ENCRYPTION.txt`, data.Body.toString());
         });
         (0, child_process_1.execSync)(`mkdir -p election/electionID-${electionId}/cipher`);
-        const { BallotHash: ballots } = await this.getBallots(email, electionId);
+        const ballots = await this.getBallots(email, electionId);
         let getBallotFile = ballots.map((ballot, index) => {
-            const url = `https://gateway.pinata.cloud/ipfs/${ballot}`;
+            const url = `https://gateway.pinata.cloud/ipfs/${ballot.BallotHash}`;
             return (0, axios_1.default)({
                 method: 'get',
                 url,

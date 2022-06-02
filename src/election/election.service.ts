@@ -326,7 +326,10 @@ export class ElectionService {
     });
 
     s3.getObject(
-      { Bucket: 'uosvotepk', Key: `${electionId}-ENCRYPTION.txt` },
+      {
+        Bucket: 'uosvotepk',
+        Key: `election/${electionId}/${electionId}-ENCRYPTION.txt`,
+      },
       (err, data) => {
         if (err) {
           throw err;
@@ -339,10 +342,10 @@ export class ElectionService {
     );
     execSync(`mkdir -p election/electionID-${electionId}/cipher`);
 
-    const { BallotHash: ballots } = await this.getBallots(email, electionId);
+    const ballots = await this.getBallots(email, electionId);
 
     let getBallotFile = ballots.map((ballot, index) => {
-      const url = `https://gateway.pinata.cloud/ipfs/${ballot}`;
+      const url = `https://gateway.pinata.cloud/ipfs/${ballot.BallotHash}`;
       return axios({
         method: 'get',
         url,
