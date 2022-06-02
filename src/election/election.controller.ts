@@ -55,7 +55,11 @@ export class ElectionController {
 
   @Post('/:id')
   vote(@Param('id') electionId, @Request() req) {
-    return this.electionService.vote(req.user.email, electionId, req.body.hash);
+    return this.electionService.vote(
+      req.user.email,
+      electionId,
+      req.body.selected,
+    );
   }
 
   @Get('/:id')

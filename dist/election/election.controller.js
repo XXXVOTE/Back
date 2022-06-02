@@ -39,7 +39,7 @@ let ElectionController = class ElectionController {
         return this.electionService.decryptResult(electionId);
     }
     vote(electionId, req) {
-        return this.electionService.vote(req.user.email, electionId, req.body.hash);
+        return this.electionService.vote(req.user.email, electionId, req.body.selected);
     }
     getElection(electionId, req) {
         return this.electionService.getElectionFromLedger(req.user.email, electionId);

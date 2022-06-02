@@ -13,7 +13,7 @@ export declare class ElectionService {
     getAllElection(email: string): Promise<any[]>;
     createKey(electionID: number): Promise<void>;
     saveKey(electionID: number): Promise<void>;
-    vote(email: string, electionId: number, hash: string): Promise<void>;
+    vote(email: string, electionId: number, selected: number): Promise<void>;
     getBallots(email: string, electionId: number): Promise<any>;
     getMyBallot(email: string, electionId: number): Promise<any>;
     getVoterNum(email: string, electionId: number): Promise<any>;

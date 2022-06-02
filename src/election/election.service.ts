@@ -7,6 +7,8 @@ import { candidateDTO, CreateElectionrDto } from './election.dto';
 import { execSync } from 'child_process';
 import { S3 } from 'aws-sdk';
 import axios from 'axios';
+import * as md5 from 'md5';
+const pinataSDK = require('@pinata/sdk');
 
 @Injectable()
 export class ElectionService {
@@ -200,15 +202,47 @@ export class ElectionService {
 
     s3.upload(encryption, (err: any, data: any) => {
       if (err) throw err;
-      execSync(`rm -rf election/electionID-${electionID}/ENCRYPTION.txt`);
     });
     s3.upload(multiplication, (err: any, data: any) => {
       if (err) throw err;
-      execSync(`rm -rf election/electionID-${electionID}/MULTIPLICATION.txt`);
     });
   }
 
-  async vote(email: string, electionId: number, hash: string) {
+  async vote(email: string, electionId: number, selected: number) {
+    const filename = `election${electionId}-${md5(email + new Date())}`;
+    execSync(
+      `cd election/electionID-${electionId} && ./UosVote voteAndEncrypt ${selected} ${filename}`,
+    );
+    let hash = '';
+    const pinata = pinataSDK(
+      '1ada54b3bad4005a46c7',
+      'c9ffd9243831d564f3db4b0eff991e6d4eb1a8194c076efd6068e58963b9df46',
+    );
+    const options: any = {
+      pinataOptions: {
+        cidVersion: 0,
+      },
+    };
+    await pinata
+      .pinFromFS(
+        `election/electionID-${electionId}/cipher/${filename}`,
+        options,
+      )
+      .then((result) => {
+        hash = result.IpfsHash;
+      })
+      .catch(() => {
+        //handle error here
+        throw new HttpException(
+          'IPFS problem',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      });
+
+    execSync(
+      `cd election/electionID-${electionId}/cipher && mv ${filename} ${hash}`,
+    );
+
     const gateway = new Gateway();
 
     try {

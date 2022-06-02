@@ -25,6 +25,8 @@ const fabric_network_1 = require("fabric-network");
 const child_process_1 = require("child_process");
 const aws_sdk_1 = require("aws-sdk");
 const axios_1 = require("axios");
+const md5 = require("md5");
+const pinataSDK = require('@pinata/sdk');
 let ElectionService = class ElectionService {
     constructor(prisma, fabric) {
         this.prisma = prisma;
@@ -150,15 +152,31 @@ let ElectionService = class ElectionService {
         s3.upload(encryption, (err, data) => {
             if (err)
                 throw err;
-            (0, child_process_1.execSync)(`rm -rf election/electionID-${electionID}/ENCRYPTION.txt`);
         });
         s3.upload(multiplication, (err, data) => {
             if (err)
                 throw err;
-            (0, child_process_1.execSync)(`rm -rf election/electionID-${electionID}/MULTIPLICATION.txt`);
         });
     }
-    async vote(email, electionId, hash) {
+    async vote(email, electionId, selected) {
+        const filename = `election${electionId}-${md5(email + new Date())}`;
+        (0, child_process_1.execSync)(`cd election/electionID-${electionId} && ./UosVote voteAndEncrypt ${selected} ${filename}`);
+        let hash = '';
+        const pinata = pinataSDK('1ada54b3bad4005a46c7', 'c9ffd9243831d564f3db4b0eff991e6d4eb1a8194c076efd6068e58963b9df46');
+        const options = {
+            pinataOptions: {
+                cidVersion: 0,
+            },
+        };
+        await pinata
+            .pinFromFS(`election/electionID-${electionId}/cipher/${filename}`, options)
+            .then((result) => {
+            hash = result.IpfsHash;
+        })
+            .catch(() => {
+            throw new common_1.HttpException('IPFS problem', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
+        });
+        (0, child_process_1.execSync)(`cd election/electionID-${electionId}/cipher && mv ${filename} ${hash}`);
         const gateway = new fabric_network_1.Gateway();
         try {
             const contract = await this.fabric.connectGateway(gateway, email);
