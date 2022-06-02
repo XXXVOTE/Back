@@ -68,8 +68,11 @@ export class ElectionController {
   }
 
   @Get('/:id')
-  getElection(@Param('id') electionId: number, @Request() req) {
-    return this.electionService.getElection(req.user.email, electionId);
+  getElection(@Param('id') electionId, @Request() req) {
+    return this.electionService.getElection(
+      req.user.email,
+      parseInt(electionId),
+    );
   }
 
   @Get()

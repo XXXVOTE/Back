@@ -45,7 +45,7 @@ let ElectionController = class ElectionController {
         return this.electionService.vote(req.user.email, electionId, req.body.selected);
     }
     getElection(electionId, req) {
-        return this.electionService.getElection(req.user.email, electionId);
+        return this.electionService.getElection(req.user.email, parseInt(electionId));
     }
     getElections(req) {
         return this.electionService.getAllElection(req.user.email);
@@ -119,7 +119,7 @@ __decorate([
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number, Object]),
+    __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", void 0)
 ], ElectionController.prototype, "getElection", null);
 __decorate([
