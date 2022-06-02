@@ -29,6 +29,9 @@ let ElectionController = class ElectionController {
     getBallot(electionId, req) {
         return this.electionService.getMyBallot(req.user.email, electionId);
     }
+    result(electionId, req) {
+        return this.electionService.getResult(req.user.email, electionId);
+    }
     getVoterNum(electionId, req) {
         return this.electionService.getVoterNum(req.user.email, electionId);
     }
@@ -42,7 +45,7 @@ let ElectionController = class ElectionController {
         return this.electionService.vote(req.user.email, electionId, req.body.selected);
     }
     getElection(electionId, req) {
-        return this.electionService.getElectionFromLedger(req.user.email, electionId);
+        return this.electionService.getElection(req.user.email, electionId);
     }
     getElections(req) {
         return this.electionService.getAllElection(req.user.email);
@@ -71,6 +74,14 @@ __decorate([
     __metadata("design:paramtypes", [Number, Object]),
     __metadata("design:returntype", void 0)
 ], ElectionController.prototype, "getBallot", null);
+__decorate([
+    (0, common_1.Get)('/result/:id'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Object]),
+    __metadata("design:returntype", void 0)
+], ElectionController.prototype, "result", null);
 __decorate([
     (0, common_1.Get)('/voterNum/:id'),
     __param(0, (0, common_1.Param)('id')),

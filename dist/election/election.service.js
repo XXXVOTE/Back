@@ -8,13 +8,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var __asyncValues = (this && this.__asyncValues) || function (o) {
-    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
-    var m = o[Symbol.asyncIterator], i;
-    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
-    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
-    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ElectionService = void 0;
 const prisma_service_1 = require("../prisma.service");
@@ -31,6 +24,7 @@ let ElectionService = class ElectionService {
     constructor(prisma, fabric) {
         this.prisma = prisma;
         this.fabric = fabric;
+        this.pinata = pinataSDK('1ada54b3bad4005a46c7', 'c9ffd9243831d564f3db4b0eff991e6d4eb1a8194c076efd6068e58963b9df46');
     }
     async createElection(email, createElectionDTO, candidates) {
         const gateway = new fabric_network_1.Gateway();
@@ -88,40 +82,15 @@ let ElectionService = class ElectionService {
             throw new common_1.HttpException('checkCandidateValidity Forbidden', common_1.HttpStatus.FORBIDDEN);
         }
     }
-    async getElectionFromLedger(email, electionID) {
-        const gateway = new fabric_network_1.Gateway();
-        try {
-            const contract = await this.fabric.connectGateway(gateway, email);
-            const res = await contract.submitTransaction('getElection', String(electionID));
-            return JSON.stringify(JSON.parse(res.toString()), null, 2);
-        }
-        catch (err) {
-            console.log(`Failed to run getElection: ${err}`);
-        }
-        finally {
-            gateway.disconnect();
-        }
+    async getElection(email, electionId) {
+        let election = await this.prisma.getElection(electionId);
+        const candidates = await this.prisma.getCandidates(electionId);
+        const now = await this.getVoterNum(email, electionId);
+        return Object.assign(Object.assign({}, election), { candidates, now });
     }
     async getAllElection(email) {
-        var e_1, _a;
         let elections = await this.prisma.getAllElection();
-        let ret = [];
-        try {
-            for (var elections_1 = __asyncValues(elections), elections_1_1; elections_1_1 = await elections_1.next(), !elections_1_1.done;) {
-                let ele = elections_1_1.value;
-                const candidates = await this.prisma.getCandidates(ele.id);
-                const now = await this.getVoterNum(email, ele.id);
-                ret.push(Object.assign(Object.assign({}, ele), { candidates, now }));
-            }
-        }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
-        finally {
-            try {
-                if (elections_1_1 && !elections_1_1.done && (_a = elections_1.return)) await _a.call(elections_1);
-            }
-            finally { if (e_1) throw e_1.error; }
-        }
-        return ret;
+        return elections;
     }
     async createKey(electionID) {
         try {
@@ -160,15 +129,15 @@ let ElectionService = class ElectionService {
     }
     async vote(email, electionId, selected) {
         const filename = `election${electionId}-${md5(email + new Date())}`;
+        (0, child_process_1.execSync)(`mkdir -p election/electionID-${electionId}/cipher`);
         (0, child_process_1.execSync)(`cd election/electionID-${electionId} && ./UosVote voteAndEncrypt ${selected} ${filename}`);
         let hash = '';
-        const pinata = pinataSDK('1ada54b3bad4005a46c7', 'c9ffd9243831d564f3db4b0eff991e6d4eb1a8194c076efd6068e58963b9df46');
         const options = {
             pinataOptions: {
                 cidVersion: 0,
             },
         };
-        await pinata
+        await this.pinata
             .pinFromFS(`election/electionID-${electionId}/cipher/${filename}`, options)
             .then((result) => {
             hash = result.IpfsHash;
@@ -240,7 +209,7 @@ let ElectionService = class ElectionService {
             gateway.disconnect();
         }
     }
-    async addBallots(admin, electionId) {
+    async addBallots(email, electionId) {
         const s3 = new aws_sdk_1.S3({
             accessKeyId: process.env.AWS_ACCESS_KEY_ID,
             secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
@@ -252,7 +221,7 @@ let ElectionService = class ElectionService {
             fs.writeFileSync(`election/electionID-${electionId}/ENCRYPTION.txt`, data.Body.toString());
         });
         (0, child_process_1.execSync)(`mkdir -p election/electionID-${electionId}/cipher`);
-        const ballots = ['QmdQvg3uDjj13HcGY5stjqYfQu31FFpRBTKYsmYAFtcAj7'];
+        const { BallotHash: ballots } = await this.getBallots(email, electionId);
         let getBallotFile = ballots.map((ballot, index) => {
             const url = `https://gateway.pinata.cloud/ipfs/${ballot}`;
             return (0, axios_1.default)({
@@ -264,9 +233,36 @@ let ElectionService = class ElectionService {
         await Promise.all(getBallotFile);
         try {
             (0, child_process_1.execSync)(`cd election/electionID-${electionId} && ./UosVote addBallots`);
+            let hash = '';
+            const options = {
+                pinataOptions: {
+                    cidVersion: 0,
+                },
+            };
+            await this.pinata
+                .pinFromFS(`election/electionID-${electionId}/RESULT`, options)
+                .then((result) => {
+                hash = result.IpfsHash;
+            })
+                .catch(() => {
+                throw new common_1.HttpException('IPFS problem', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
+            });
         }
         catch (err) {
             console.log('create Key error', err);
+        }
+    }
+    async pushResult(email, electionId, hash) {
+        const gateway = new fabric_network_1.Gateway();
+        try {
+            const contract = await this.fabric.connectGateway(gateway, email);
+            await contract.submitTransaction('resultHash', String(electionId), hash);
+        }
+        catch (err) {
+            throw err;
+        }
+        finally {
+            gateway.disconnect();
         }
     }
     async decryptResult(electionId) {
@@ -277,6 +273,21 @@ let ElectionService = class ElectionService {
             .split(' ');
         console.log(result);
         return result;
+    }
+    async getResult(email, electionId) {
+        const gateway = new fabric_network_1.Gateway();
+        try {
+            const contract = await this.fabric.connectGateway(gateway, email);
+            const res = await contract.submitTransaction('getElection', String(electionId));
+            const result = JSON.parse(JSON.stringify(JSON.parse(res.toString()), null, 2));
+            return result.result;
+        }
+        catch (err) {
+            console.log(`Failed to run getElection: ${err}`);
+        }
+        finally {
+            gateway.disconnect();
+        }
     }
 };
 ElectionService = __decorate([
