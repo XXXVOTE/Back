@@ -276,7 +276,7 @@ let ElectionService = class ElectionService {
             const contract = await this.fabric.connectGateway(gateway, email);
             const res = await contract.submitTransaction('getElection', String(electionId));
             const result = JSON.parse(JSON.stringify(JSON.parse(res.toString()), null, 2));
-            return result.result;
+            return { result: result.result };
         }
         catch (err) {
             console.log(`Failed to run getElection: ${err}`);

@@ -435,7 +435,7 @@ export class ElectionService {
         JSON.stringify(JSON.parse(res.toString()), null, 2),
       );
 
-      return result.result;
+      return { result: result.result };
     } catch (err) {
       console.log(`Failed to run getElection: ${err}`);
     } finally {
