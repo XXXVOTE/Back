@@ -17,7 +17,6 @@ const fs = require("fs");
 const fabric_network_1 = require("fabric-network");
 const child_process_1 = require("child_process");
 const aws_sdk_1 = require("aws-sdk");
-const axios_1 = require("axios");
 const md5 = require("md5");
 const pinataSDK = require('@pinata/sdk');
 let ElectionService = class ElectionService {
@@ -224,16 +223,6 @@ let ElectionService = class ElectionService {
             fs.writeFileSync(`election/electionID-${electionId}/ENCRYPTION.txt`, data.Body.toString());
         });
         (0, child_process_1.execSync)(`mkdir -p election/electionID-${electionId}/cipher`);
-        const ballots = await this.getBallots(email, electionId);
-        let getBallotFile = ballots.map((ballot, index) => {
-            const url = `https://gateway.pinata.cloud/ipfs/${ballot.BallotHash}`;
-            return (0, axios_1.default)({
-                method: 'get',
-                url,
-                responseType: 'stream',
-            }).then((response) => response.data.pipe(fs.createWriteStream(`election/electionID-${electionId}/cipher/ballot${index}`)));
-        });
-        await Promise.all(getBallotFile);
         try {
             (0, child_process_1.execSync)(`cd election/electionID-${electionId} && ./UosVote addBallots`);
             let hash = '';

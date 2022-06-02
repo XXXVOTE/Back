@@ -342,24 +342,24 @@ export class ElectionService {
     );
     execSync(`mkdir -p election/electionID-${electionId}/cipher`);
 
-    const ballots = await this.getBallots(email, electionId);
+    // const ballots = await this.getBallots(email, electionId);
 
-    let getBallotFile = ballots.map((ballot, index) => {
-      const url = `https://gateway.pinata.cloud/ipfs/${ballot.BallotHash}`;
-      return axios({
-        method: 'get',
-        url,
-        responseType: 'stream',
-      }).then((response) =>
-        response.data.pipe(
-          fs.createWriteStream(
-            `election/electionID-${electionId}/cipher/ballot${index}`,
-          ),
-        ),
-      );
-    });
+    // let getBallotFile = ballots.map((ballot, index) => {
+    //   const url = `https://gateway.pinata.cloud/ipfs/${ballot.BallotHash}`;
+    //   return axios({
+    //     method: 'get',
+    //     url,
+    //     responseType: 'stream',
+    //   }).then((response) =>
+    //     response.data.pipe(
+    //       fs.createWriteStream(
+    //         `election/electionID-${electionId}/cipher/ballot${index}`,
+    //       ),
+    //     ),
+    //   );
+    // });
 
-    await Promise.all(getBallotFile);
+    // await Promise.all(getBallotFile);
 
     try {
       execSync(`cd election/electionID-${electionId} && ./UosVote addBallots`);
