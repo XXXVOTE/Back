@@ -80,6 +80,9 @@ let PrismaService = class PrismaService extends client_1.PrismaClient {
             where: {
                 electionId: electionId,
             },
+            orderBy: {
+                candidateNumber: 'asc',
+            },
         });
     }
 };
