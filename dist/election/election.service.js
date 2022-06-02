@@ -227,6 +227,9 @@ let ElectionService = class ElectionService {
             (0, child_process_1.execSync)(`cd election/electionID-${electionId} && ./UosVote addBallots`);
             let hash = '';
             const options = {
+                pinataMetadata: {
+                    name: `${electionId}-RESULT`,
+                },
                 pinataOptions: {
                     cidVersion: 0,
                 },

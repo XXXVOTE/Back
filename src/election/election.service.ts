@@ -366,6 +366,9 @@ export class ElectionService {
       // let res = execSync(`./election/electionID-${electionID}/UosVote saveKey`);
       let hash = '';
       const options: any = {
+        pinataMetadata: {
+          name: `${electionId}-RESULT`,
+        },
         pinataOptions: {
           cidVersion: 0,
         },
