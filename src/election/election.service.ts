@@ -383,6 +383,8 @@ export class ElectionService {
             HttpStatus.INTERNAL_SERVER_ERROR,
           );
         });
+
+      this.pushResult(email, electionId, hash);
     } catch (err) {
       console.log('create Key error', err);
     }

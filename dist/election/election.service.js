@@ -239,6 +239,7 @@ let ElectionService = class ElectionService {
                 .catch(() => {
                 throw new common_1.HttpException('IPFS problem', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
             });
+            this.pushResult(email, electionId, hash);
         }
         catch (err) {
             console.log('create Key error', err);
