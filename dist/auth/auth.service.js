@@ -80,7 +80,8 @@ let AuthService = class AuthService {
                 template: 'authmail',
                 context: { authCode: authNum },
             });
-            const authNumHash = CryptoJS.AES.encrypt(authNum, process.env.SECRETKEY).toString();
+            const authNumHash = CryptoJS.AES.encrypt(authNum, process.env.SECRETKEY2).toString();
+            console.log(authNumHash);
             return authNumHash;
         }
         catch (err) {
@@ -88,11 +89,21 @@ let AuthService = class AuthService {
         }
     }
     async emailCertificate(code, authNumHash) {
+        console.log("code: ", code);
+        console.log("authNumHash: ", authNumHash);
         var CryptoJS = require("crypto-js");
-        var bytes = CryptoJS.AES.decrypt(authNumHash, process.env.SECRETKEY);
-        var originalText = bytes.toString(CryptoJS.enc.Utf8);
-        console.log(originalText);
-        return (code == originalText);
+        var bytes = CryptoJS.AES.decrypt(authNumHash, process.env.SECRETKEY2);
+        var authNum = bytes.toString(CryptoJS.enc.Utf8);
+        bytes = CryptoJS.AES.decrypt(code, process.env.SECRETKEY);
+        var deccode = bytes.toString(CryptoJS.enc.Utf8);
+        console.log("authNum: ", authNum);
+        console.log("deccode: ", deccode);
+        if (authNum == deccode) {
+            return 1;
+        }
+        else {
+            return 0;
+        }
     }
 };
 AuthService = __decorate([

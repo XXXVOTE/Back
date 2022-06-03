@@ -28,13 +28,14 @@ AuthModule = __decorate([
             jwt_1.JwtModule.register({ secret: process.env.jwtSecret }),
             mailer_1.MailerModule.forRoot({
                 transport: {
-                    service: 'gmail',
-                    host: 'smtp.gmail.com',
-                    port: 587,
-                    secure: false,
+                    service: 'Naver',
+                    host: 'smtp.naver.com',
+                    port: 465,
+                    ignoreTLS: true,
+                    secure: true,
                     auth: {
                         user: process.env.NODEMAILER_USER,
-                        pass: '12##afds',
+                        pass: process.env.NODEMAILER_PASS,
                     },
                 },
                 template: {

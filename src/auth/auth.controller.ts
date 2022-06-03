@@ -35,21 +35,30 @@ export class AuthController {
   }
 
   @Post('authMail')
-  async authenticationMail(@Request() req, @Res({ passthrough: true }) res) {
+  async authenticationMail(@Request() req) {
     const authNum = await this.authService.mail(req.body.email);
-    res.cookie('authNum', authNum, {
-      path: '/',
-      expires: new Date(Date.now() + 300000),
-    }); // cookie 활성화 경로 설정 필요
+    // res.cookie('authNum', authNum, {
+    //   path: '/',
+    //   expires: new Date(Date.now() + 300000),
+    // }); // cookie 활성화 경로 설정 필요
 
-    return;
+    return {authNum: authNum};
+    //  res.status(201).send()
   }
 
   @Post('validateMail')
-  async validateMail(@Request() req) {
-    return this.authService.emailCertificate(
+  async validateMail(@Request() req, @Res({ passthrough: true }) res) {
+    const result = this.authService.emailCertificate(
       req.body.code,
-      req.cookies.authNum,
+      req.body.authNumHash,
     );
+
+    if (await result == 1) {
+      console.log(1);
+      return { status: 201 };
+    } else {
+      console.log(2)
+      return { status: 409 };
+    }
   }
 }

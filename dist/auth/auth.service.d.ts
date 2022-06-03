@@ -14,5 +14,5 @@ export declare class AuthService {
         accessToken: string;
     }>;
     mail(email: string): Promise<any>;
-    emailCertificate(code: string, authNumHash: string): Promise<boolean>;
+    emailCertificate(code: string, authNumHash: string): Promise<0 | 1>;
 }

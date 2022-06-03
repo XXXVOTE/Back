@@ -88,10 +88,15 @@ export class AuthService {
 
       // const authNumHash = await bcrypt.hash(authNum, await bcrypt.genSalt());
 
-      const authNumHash = CryptoJS.AES.encrypt(authNum, process.env.SECRETKEY).toString();
+      const authNumHash = CryptoJS.AES.encrypt(authNum, process.env.SECRETKEY2).toString();
+
+      console.log(authNumHash);
+
       return authNumHash;
+      // return res.status(201).send()
     } catch (err) {
       throw err;
+      // return res.status(500).send()
     }
   }
 
@@ -126,7 +131,9 @@ export class AuthService {
   // }
 
   async emailCertificate(code: string, authNumHash: string) {
-    // 입력코드, 해시값 주면 검증
+    // 암호화된 입력코드, 해시값 주면 검증
+    console.log("code: ", code);
+    console.log("authNumHash: ", authNumHash);
     var CryptoJS = require("crypto-js");
     // const decryptAES = (secretKey: string, encryptedText: string): string => {
     //   const secretKeyToBufferArray: Buffer = Buffer.from(secretKey, 'utf8');
@@ -147,12 +154,20 @@ export class AuthService {
     // let decryptedValue: string = decryptAES(secretKey, encryptedValue);
 
     // Decrypt
-    var bytes  = CryptoJS.AES.decrypt(authNumHash, process.env.SECRETKEY);
-    var originalText = bytes.toString(CryptoJS.enc.Utf8);
+    var bytes  = CryptoJS.AES.decrypt(authNumHash, process.env.SECRETKEY2);
+    var authNum = bytes.toString(CryptoJS.enc.Utf8);
 
-    console.log(originalText);
+    bytes = CryptoJS.AES.decrypt(code, process.env.SECRETKEY);
+    var deccode = bytes.toString(CryptoJS.enc.Utf8);
 
-    return (code == originalText);
+    console.log("authNum: ", authNum);
+    console.log("deccode: ", deccode);
+
+    if (authNum == deccode) {
+      return 1;
+    } else {
+      return 0;
+    }
 
     // const result = await bcrypt.compare(code, authNum);
 
