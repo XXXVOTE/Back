@@ -307,6 +307,21 @@ let ElectionService = class ElectionService {
             gateway.disconnect();
         }
     }
+    async extendEndDate(email, electionId, newEndDate) {
+        const gateway = new fabric_network_1.Gateway();
+        try {
+            const contract = await this.fabric.connectGateway(gateway, email);
+            await contract.submitTransaction('extendEndDate', String(electionId), newEndDate);
+            await this.prisma.editElection(electionId, newEndDate);
+        }
+        catch (err) {
+            console.log(`Failed to run extend EndDate: ${err}`);
+            throw err;
+        }
+        finally {
+            gateway.disconnect();
+        }
+    }
 };
 ElectionService = __decorate([
     (0, common_1.Injectable)(),

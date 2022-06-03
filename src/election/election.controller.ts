@@ -5,6 +5,7 @@ import {
   HttpException,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Request,
   UseGuards,
@@ -74,6 +75,15 @@ export class ElectionController {
       req.user.email,
       parseInt(electionId),
       req.body.selected,
+    );
+  }
+
+  @Patch('/:id')
+  editElection(@Param('id') electionId, @Request() req) {
+    return this.electionService.extendEndDate(
+      req.user.email,
+      parseInt(electionId),
+      req.body.newEndDate,
     );
   }
 

@@ -53,6 +53,9 @@ let ElectionController = class ElectionController {
     vote(electionId, req) {
         return this.electionService.vote(req.user.email, parseInt(electionId), req.body.selected);
     }
+    editElection(electionId, req) {
+        return this.electionService.extendEndDate(req.user.email, parseInt(electionId), req.body.newEndDate);
+    }
     getElection(electionId, req) {
         return this.electionService.getElection(req.user.email, parseInt(electionId));
     }
@@ -131,6 +134,14 @@ __decorate([
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", void 0)
 ], ElectionController.prototype, "vote", null);
+__decorate([
+    (0, common_1.Patch)('/:id'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", void 0)
+], ElectionController.prototype, "editElection", null);
 __decorate([
     (0, common_1.Get)('/:id'),
     __param(0, (0, common_1.Param)('id')),

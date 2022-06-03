@@ -36,4 +36,5 @@ export declare class ElectionService {
     getResult(email: string, electionId: number): Promise<{
         result: any;
     }>;
+    extendEndDate(email: string, electionId: number, newEndDate: string): Promise<void>;
 }

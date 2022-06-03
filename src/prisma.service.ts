@@ -83,6 +83,17 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     });
   }
 
+  async editElection(id: number, endDate: string) {
+    return await this.election.update({
+      where: {
+        id,
+      },
+      data: {
+        endDate,
+      },
+    });
+  }
+
   async getAllElection() {
     return await this.election.findMany({
       orderBy: {

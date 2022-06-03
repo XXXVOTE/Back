@@ -68,6 +68,16 @@ let PrismaService = class PrismaService extends client_1.PrismaClient {
             },
         });
     }
+    async editElection(id, endDate) {
+        return await this.election.update({
+            where: {
+                id,
+            },
+            data: {
+                endDate,
+            },
+        });
+    }
     async getAllElection() {
         return await this.election.findMany({
             orderBy: {

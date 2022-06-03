@@ -13,6 +13,7 @@ export declare class ElectionController {
     addBallot(electionId: any, req: any): Promise<void>;
     decrypt(electionId: any, req: any): Promise<void>;
     vote(electionId: any, req: any): Promise<void>;
+    editElection(electionId: any, req: any): Promise<void>;
     getElection(electionId: any, req: any): Promise<{
         candidates: import(".prisma/client").Candidate[];
         now: any;
