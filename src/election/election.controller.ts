@@ -60,7 +60,7 @@ export class ElectionController {
   @Post('/decryptResult/:id')
   decrypt(@Param('id') electionId, @Request() req) {
     if (req.user.role != 'admin') {
-      return new HttpException('unauthorized', HttpStatus.UNAUTHORIZED);
+      throw new HttpException('unauthorized', HttpStatus.UNAUTHORIZED);
     }
     return this.electionService.decryptResult(electionId);
   }

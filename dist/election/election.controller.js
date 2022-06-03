@@ -43,7 +43,7 @@ let ElectionController = class ElectionController {
     }
     decrypt(electionId, req) {
         if (req.user.role != 'admin') {
-            return new common_1.HttpException('unauthorized', common_1.HttpStatus.UNAUTHORIZED);
+            throw new common_1.HttpException('unauthorized', common_1.HttpStatus.UNAUTHORIZED);
         }
         return this.electionService.decryptResult(electionId);
     }

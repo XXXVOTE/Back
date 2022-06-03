@@ -1,4 +1,3 @@
-import { HttpException } from '@nestjs/common';
 import { ElectionService } from './election.service';
 export declare class ElectionController {
     private readonly electionService;
@@ -12,7 +11,7 @@ export declare class ElectionController {
     electionRes(electionId: any, req: any): Promise<string[]>;
     getVoterNum(electionId: any, req: any): Promise<any>;
     addBallot(electionId: any, req: any): Promise<void>;
-    decrypt(electionId: any, req: any): Promise<void> | HttpException;
+    decrypt(electionId: any, req: any): Promise<void>;
     vote(electionId: any, req: any): Promise<void>;
     getElection(electionId: any, req: any): Promise<{
         candidates: import(".prisma/client").Candidate[];
