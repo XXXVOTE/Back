@@ -274,8 +274,7 @@ let ElectionService = class ElectionService {
             .toString()
             .split(' ');
         const candidates = await this.prisma.getCandidates(electionId);
-        result.slice(0, candidates.length);
-        return result;
+        return result.slice(0, candidates.length);
     }
     async getResult(email, electionId) {
         const gateway = new fabric_network_1.Gateway();
