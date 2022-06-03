@@ -28,37 +28,37 @@ export class ElectionController {
   }
 
   @Get('/ballot/:id')
-  getBallots(@Param('id') electionId: number, @Request() req) {
+  getBallots(@Param('id') electionId, @Request() req) {
     return this.electionService.getBallots(req.user.email, electionId);
   }
 
   @Get('/myballot/:id')
-  getBallot(@Param('id') electionId: number, @Request() req) {
+  getBallot(@Param('id') electionId, @Request() req) {
     return this.electionService.getMyBallot(req.user.email, electionId);
   }
 
   @Get('/result/:id')
-  result(@Param('id') electionId: number, @Request() req) {
+  result(@Param('id') electionId, @Request() req) {
     return this.electionService.getResult(req.user.email, electionId);
   }
 
   @Get('/electionResult/:id')
-  electionRes(@Param('id') electionId: number, @Request() req) {
-    return this.electionService.getElectionResult(electionId);
+  electionRes(@Param('id') electionId, @Request() req) {
+    return this.electionService.getElectionResult(parseInt(electionId));
   }
 
   @Get('/voterNum/:id')
-  getVoterNum(@Param('id') electionId: number, @Request() req) {
+  getVoterNum(@Param('id') electionId, @Request() req) {
     return this.electionService.getVoterNum(req.user.email, electionId);
   }
 
   @Post('/addballot/:id')
-  addBallot(@Param('id') electionId: number, @Request() req) {
+  addBallot(@Param('id') electionId, @Request() req) {
     return this.electionService.addBallots(req.user.email, electionId);
   }
 
   @Post('/decryptResult/:id')
-  decrypt(@Param('id') electionId: number, @Request() req) {
+  decrypt(@Param('id') electionId, @Request() req) {
     if (req.user.role != 'admin') {
       return new HttpException('unauthorized', HttpStatus.UNAUTHORIZED);
     }

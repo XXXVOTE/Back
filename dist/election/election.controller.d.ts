@@ -4,15 +4,15 @@ export declare class ElectionController {
     private readonly electionService;
     constructor(electionService: ElectionService);
     createElection(req: any): Promise<import(".prisma/client").Election>;
-    getBallots(electionId: number, req: any): Promise<any>;
-    getBallot(electionId: number, req: any): Promise<any>;
-    result(electionId: number, req: any): Promise<{
+    getBallots(electionId: any, req: any): Promise<any>;
+    getBallot(electionId: any, req: any): Promise<any>;
+    result(electionId: any, req: any): Promise<{
         result: any;
     }>;
-    electionRes(electionId: number, req: any): Promise<string[]>;
-    getVoterNum(electionId: number, req: any): Promise<any>;
-    addBallot(electionId: number, req: any): Promise<void>;
-    decrypt(electionId: number, req: any): Promise<void> | HttpException;
+    electionRes(electionId: any, req: any): Promise<string[]>;
+    getVoterNum(electionId: any, req: any): Promise<any>;
+    addBallot(electionId: any, req: any): Promise<void>;
+    decrypt(electionId: any, req: any): Promise<void> | HttpException;
     vote(electionId: any, req: any): Promise<void>;
     getElection(electionId: any, req: any): Promise<{
         candidates: import(".prisma/client").Candidate[];
