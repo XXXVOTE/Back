@@ -127,6 +127,10 @@ let ElectionService = class ElectionService {
         });
     }
     async vote(email, electionId, selected) {
+        const election = await this.prisma.getElection(electionId);
+        if (!this.checkValidDate(election)) {
+            throw new common_1.HttpException(`not valid date for Vote`, common_1.HttpStatus.CONFLICT);
+        }
         const filename = `election${electionId}-${md5(email + new Date())}`;
         (0, child_process_1.execSync)(`mkdir -p election/electionID-${electionId}/cipher`);
         (0, child_process_1.execSync)(`cd election/electionID-${electionId} && ./UosVote voteAndEncrypt ${selected} ${filename}`);
@@ -156,6 +160,16 @@ let ElectionService = class ElectionService {
         finally {
             gateway.disconnect();
         }
+    }
+    async checkValidDate(election) {
+        const cur = new Date();
+        if (cur < new Date(election.startDate)) {
+            return false;
+        }
+        if (cur > new Date(election.endDate)) {
+            return false;
+        }
+        return true;
     }
     async getBallots(email, electionId) {
         const gateway = new fabric_network_1.Gateway();
@@ -213,16 +227,18 @@ let ElectionService = class ElectionService {
             accessKeyId: process.env.AWS_ACCESS_KEY_ID,
             secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
         });
-        s3.getObject({
-            Bucket: 'uosvotepk',
-            Key: `election/${electionId}/${electionId}-ENCRYPTION.txt`,
-        }, (err, data) => {
-            if (err) {
-                throw err;
-            }
-            fs.writeFileSync(`election/electionID-${electionId}/ENCRYPTION.txt`, data.Body.toString());
-        });
-        (0, child_process_1.execSync)(`mkdir -p election/electionID-${electionId}/cipher`);
+        const stat = fs.statSync(`election/electionID-${electionId}/ENCRYPTION.txt`);
+        if (!stat.isFile()) {
+            s3.getObject({
+                Bucket: 'uosvotepk',
+                Key: `election/${electionId}/${electionId}-ENCRYPTION.txt`,
+            }, (err, data) => {
+                if (err) {
+                    throw err;
+                }
+                fs.writeFileSync(`election/electionID-${electionId}/ENCRYPTION.txt`, data.Body.toString());
+            });
+        }
         try {
             (0, child_process_1.execSync)(`cd election/electionID-${electionId} && ./UosVote addBallots`);
             let hash = '';

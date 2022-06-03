@@ -198,6 +198,12 @@ export class ElectionService {
   }
 
   async vote(email: string, electionId: number, selected: number) {
+    const election = await this.prisma.getElection(electionId);
+
+    if (!this.checkValidDate(election)) {
+      throw new HttpException(`not valid date for Vote`, HttpStatus.CONFLICT);
+    }
+
     const filename = `election${electionId}-${md5(email + new Date())}`;
     execSync(`mkdir -p election/electionID-${electionId}/cipher`);
     execSync(
@@ -242,6 +248,19 @@ export class ElectionService {
     } finally {
       gateway.disconnect();
     }
+  }
+
+  async checkValidDate(election) {
+    const cur = new Date();
+
+    if (cur < new Date(election.startDate)) {
+      return false;
+    }
+    if (cur > new Date(election.endDate)) {
+      return false;
+    }
+
+    return true;
   }
 
   async getBallots(email: string, electionId: number) {
@@ -325,22 +344,27 @@ export class ElectionService {
       secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     });
 
-    s3.getObject(
-      {
-        Bucket: 'uosvotepk',
-        Key: `election/${electionId}/${electionId}-ENCRYPTION.txt`,
-      },
-      (err, data) => {
-        if (err) {
-          throw err;
-        }
-        fs.writeFileSync(
-          `election/electionID-${electionId}/ENCRYPTION.txt`,
-          data.Body.toString(),
-        );
-      },
+    const stat = fs.statSync(
+      `election/electionID-${electionId}/ENCRYPTION.txt`,
     );
-    execSync(`mkdir -p election/electionID-${electionId}/cipher`);
+    if (!stat.isFile()) {
+      s3.getObject(
+        {
+          Bucket: 'uosvotepk',
+          Key: `election/${electionId}/${electionId}-ENCRYPTION.txt`,
+        },
+        (err, data) => {
+          if (err) {
+            throw err;
+          }
+          fs.writeFileSync(
+            `election/electionID-${electionId}/ENCRYPTION.txt`,
+            data.Body.toString(),
+          );
+        },
+      );
+    }
+    // execSync(`mkdir -p election/electionID-${electionId}/cipher`);
 
     // const ballots = await this.getBallots(email, electionId);
 

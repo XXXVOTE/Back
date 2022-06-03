@@ -54,6 +54,9 @@ export class ElectionController {
 
   @Post('/addballot/:id')
   addBallot(@Param('id') electionId, @Request() req) {
+    if (req.user.role != 'admin') {
+      throw new HttpException('unauthorized', HttpStatus.UNAUTHORIZED);
+    }
     return this.electionService.addBallots(req.user.email, electionId);
   }
 
@@ -69,7 +72,7 @@ export class ElectionController {
   vote(@Param('id') electionId, @Request() req) {
     return this.electionService.vote(
       req.user.email,
-      electionId,
+      parseInt(electionId),
       req.body.selected,
     );
   }

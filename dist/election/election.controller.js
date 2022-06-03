@@ -39,6 +39,9 @@ let ElectionController = class ElectionController {
         return this.electionService.getVoterNum(req.user.email, electionId);
     }
     addBallot(electionId, req) {
+        if (req.user.role != 'admin') {
+            throw new common_1.HttpException('unauthorized', common_1.HttpStatus.UNAUTHORIZED);
+        }
         return this.electionService.addBallots(req.user.email, electionId);
     }
     decrypt(electionId, req) {
@@ -48,7 +51,7 @@ let ElectionController = class ElectionController {
         return this.electionService.decryptResult(electionId);
     }
     vote(electionId, req) {
-        return this.electionService.vote(req.user.email, electionId, req.body.selected);
+        return this.electionService.vote(req.user.email, parseInt(electionId), req.body.selected);
     }
     getElection(electionId, req) {
         return this.electionService.getElection(req.user.email, parseInt(electionId));

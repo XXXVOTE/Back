@@ -25,6 +25,7 @@ export declare class ElectionService {
     createKey(electionID: number): Promise<void>;
     saveKey(electionID: number): Promise<void>;
     vote(email: string, electionId: number, selected: number): Promise<void>;
+    checkValidDate(election: any): Promise<boolean>;
     getBallots(email: string, electionId: number): Promise<any>;
     getMyBallot(email: string, electionId: number): Promise<any>;
     getVoterNum(email: string, electionId: number): Promise<any>;
