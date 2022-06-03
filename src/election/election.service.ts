@@ -425,9 +425,7 @@ export class ElectionService {
 
     const candidates = await this.prisma.getCandidates(electionId);
 
-    result.slice(0, candidates.length);
-
-    return result;
+    return result.slice(0, candidates.length);
   }
 
   async getResult(email: string, electionId: number) {
