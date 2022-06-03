@@ -64,7 +64,9 @@ let AuthService = class AuthService {
         return null;
     }
     async login(user) {
-        const payload = { sub: user.email };
+        const payload = { sub: user.email, role: null };
+        if (user.email === 'admin')
+            payload.role = 'admin';
         return {
             accessToken: this.jwtService.sign(payload),
         };

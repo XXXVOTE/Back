@@ -263,11 +263,18 @@ let ElectionService = class ElectionService {
     }
     async decryptResult(electionId) {
         (0, child_process_1.execSync)(`cd election/electionID-${electionId} && ./UosVote decryptResult`);
-        const result = fs
+    }
+    async getElectionResult(electionId) {
+        const stat = fs.statSync(`election/electionID-${electionId}/ResultVec`);
+        if (!stat.isFile()) {
+            throw new common_1.HttpException(`not made result yet`, common_1.HttpStatus.NOT_FOUND);
+        }
+        let result = fs
             .readFileSync(`election/electionID-${electionId}/ResultVec`)
             .toString()
             .split(' ');
-        console.log(result);
+        const candidates = await this.prisma.getCandidates(electionId);
+        result.slice(0, candidates.length);
         return result;
     }
     async getResult(email, electionId) {

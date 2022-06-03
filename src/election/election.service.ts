@@ -408,15 +408,24 @@ export class ElectionService {
       gateway.disconnect();
     }
   }
+
   async decryptResult(electionId: number) {
     execSync(`cd election/electionID-${electionId} && ./UosVote decryptResult`);
+  }
 
-    const result = fs
+  async getElectionResult(electionId: number) {
+    const stat = fs.statSync(`election/electionID-${electionId}/ResultVec`);
+    if (!stat.isFile()) {
+      throw new HttpException(`not made result yet`, HttpStatus.NOT_FOUND);
+    }
+    let result = fs
       .readFileSync(`election/electionID-${electionId}/ResultVec`)
       .toString()
       .split(' ');
 
-    console.log(result);
+    const candidates = await this.prisma.getCandidates(electionId);
+
+    result.slice(0, candidates.length);
 
     return result;
   }

@@ -2,13 +2,12 @@ import {
   Body,
   Controller,
   Get,
+  HttpException,
+  HttpStatus,
   Param,
-  Patch,
   Post,
   Request,
-  UploadedFile,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
@@ -43,6 +42,11 @@ export class ElectionController {
     return this.electionService.getResult(req.user.email, electionId);
   }
 
+  @Get('/electionResult/:id')
+  electionRes(@Param('id') electionId: number, @Request() req) {
+    return this.electionService.getElectionResult(electionId);
+  }
+
   @Get('/voterNum/:id')
   getVoterNum(@Param('id') electionId: number, @Request() req) {
     return this.electionService.getVoterNum(req.user.email, electionId);
@@ -55,6 +59,9 @@ export class ElectionController {
 
   @Post('/decryptResult/:id')
   decrypt(@Param('id') electionId: number, @Request() req) {
+    if (req.user.role != 'admin') {
+      return new HttpException('unauthorized', HttpStatus.UNAUTHORIZED);
+    }
     return this.electionService.decryptResult(electionId);
   }
 

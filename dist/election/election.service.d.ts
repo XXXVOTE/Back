@@ -30,7 +30,8 @@ export declare class ElectionService {
     getVoterNum(email: string, electionId: number): Promise<any>;
     addBallots(email: string, electionId: number): Promise<void>;
     pushResult(email: string, electionId: number, hash: string): Promise<void>;
-    decryptResult(electionId: number): Promise<string[]>;
+    decryptResult(electionId: number): Promise<void>;
+    getElectionResult(electionId: number): Promise<string[]>;
     getResult(email: string, electionId: number): Promise<{
         result: any;
     }>;

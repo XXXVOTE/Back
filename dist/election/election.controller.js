@@ -32,6 +32,9 @@ let ElectionController = class ElectionController {
     result(electionId, req) {
         return this.electionService.getResult(req.user.email, electionId);
     }
+    electionRes(electionId, req) {
+        return this.electionService.getElectionResult(electionId);
+    }
     getVoterNum(electionId, req) {
         return this.electionService.getVoterNum(req.user.email, electionId);
     }
@@ -39,6 +42,9 @@ let ElectionController = class ElectionController {
         return this.electionService.addBallots(req.user.email, electionId);
     }
     decrypt(electionId, req) {
+        if (req.user.role != 'admin') {
+            return new common_1.HttpException('unauthorized', common_1.HttpStatus.UNAUTHORIZED);
+        }
         return this.electionService.decryptResult(electionId);
     }
     vote(electionId, req) {
@@ -82,6 +88,14 @@ __decorate([
     __metadata("design:paramtypes", [Number, Object]),
     __metadata("design:returntype", void 0)
 ], ElectionController.prototype, "result", null);
+__decorate([
+    (0, common_1.Get)('/electionResult/:id'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Object]),
+    __metadata("design:returntype", void 0)
+], ElectionController.prototype, "electionRes", null);
 __decorate([
     (0, common_1.Get)('/voterNum/:id'),
     __param(0, (0, common_1.Param)('id')),
