@@ -51,7 +51,7 @@ let ElectionController = class ElectionController {
         return this.electionService.decryptResult(electionId);
     }
     vote(electionId, req) {
-        return this.electionService.vote(req.user.email, parseInt(electionId), req.body.selected);
+        return this.electionService.vote(req.user.email, parseInt(electionId), parseInt(req.body.selected));
     }
     editElection(electionId, req) {
         return this.electionService.extendEndDate(req.user.email, parseInt(electionId), req.body.newEndDate);

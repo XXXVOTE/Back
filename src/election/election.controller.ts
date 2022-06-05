@@ -74,7 +74,7 @@ export class ElectionController {
     return this.electionService.vote(
       req.user.email,
       parseInt(electionId),
-      req.body.selected,
+      parseInt(req.body.selected),
     );
   }
 

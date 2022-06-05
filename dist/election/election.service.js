@@ -131,6 +131,7 @@ let ElectionService = class ElectionService {
         if (!(await this.checkValidDate(election))) {
             throw new common_1.HttpException(`not valid date for Vote`, common_1.HttpStatus.CONFLICT);
         }
+        console.log(selected);
         const filename = `election${electionId}-${md5(email + new Date())}`;
         (0, child_process_1.execSync)(`mkdir -p election/electionID-${electionId}/cipher`);
         (0, child_process_1.execSync)(`cd election/electionID-${electionId} && ./UosVote voteAndEncrypt ${selected} ${filename}`);

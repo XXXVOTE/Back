@@ -204,6 +204,8 @@ export class ElectionService {
       throw new HttpException(`not valid date for Vote`, HttpStatus.CONFLICT);
     }
 
+    console.log(selected);
+
     const filename = `election${electionId}-${md5(email + new Date())}`;
     execSync(`mkdir -p election/electionID-${electionId}/cipher`);
     execSync(
