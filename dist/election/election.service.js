@@ -128,7 +128,7 @@ let ElectionService = class ElectionService {
     }
     async vote(email, electionId, selected) {
         const election = await this.prisma.getElection(electionId);
-        if (!this.checkValidDate(election)) {
+        if (!(await this.checkValidDate(election))) {
             throw new common_1.HttpException(`not valid date for Vote`, common_1.HttpStatus.CONFLICT);
         }
         const filename = `election${electionId}-${md5(email + new Date())}`;

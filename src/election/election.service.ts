@@ -200,7 +200,7 @@ export class ElectionService {
   async vote(email: string, electionId: number, selected: number) {
     const election = await this.prisma.getElection(electionId);
 
-    if (!this.checkValidDate(election)) {
+    if (!(await this.checkValidDate(election))) {
       throw new HttpException(`not valid date for Vote`, HttpStatus.CONFLICT);
     }
 
@@ -252,7 +252,6 @@ export class ElectionService {
 
   async checkValidDate(election) {
     const cur = new Date();
-
     if (cur < new Date(election.startDate)) {
       return false;
     }

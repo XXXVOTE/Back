@@ -13,12 +13,13 @@ const path = require('path');
 
 async function main() {
   try {
-    const caURL = 'https://3.39.10.86:8054';
+    const caURL = `https://3.39.187.251:8054`;
     const ca = new FabricCAServices(caURL);
-
-    const walletPath = path.join(process.cwd(), 'wallet');
-    const wallet = await Wallets.newFileSystemWallet(walletPath);
-    console.log(`Wallet path : ${walletPath}`);
+    console.log('done');
+    const wallet = await Wallets.newCouchDBWallet(
+      `http://admin:password@3.39.187.251:5984`,
+      'wallet',
+    );
 
     const adminExists = await wallet.get('rca-org1');
     if (adminExists) {
