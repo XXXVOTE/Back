@@ -28,13 +28,13 @@ AuthModule = __decorate([
             jwt_1.JwtModule.register({ secret: process.env.jwtSecret }),
             mailer_1.MailerModule.forRoot({
                 transport: {
-                    service: 'gmail',
-                    host: 'smtp.gmail.com',
+                    service: 'Outlook365',
+                    host: 'smtp.office365.com',
                     port: 587,
-                    secure: false,
+                    secure: true,
                     auth: {
-                        user: process.env.NODEMAILER_USER,
-                        pass: '12##afds',
+                        user: "yunoa64@outlook.com",
+                        pass: "3578pqckdx",
                     },
                 },
                 template: {

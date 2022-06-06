@@ -33,15 +33,23 @@ let AuthController = class AuthController {
         this.hyperledger.updateCreateRole(req.body.email, req.body.enrollSecret);
     }
     async authenticationMail(req, res) {
-        const authNum = await this.authService.mail(req.body.email);
-        res.cookie('authNum', authNum, {
-            path: '/',
-            expires: new Date(Date.now() + 300000),
-        });
-        return res.status(201).send();
+        try {
+            const authNum = await this.authService.mail(req.body.email);
+            return { authNum: authNum, res: 201 };
+        }
+        catch (err) {
+            return { authNum: "", res: 409 };
+        }
     }
-    async validateMail(req) {
-        return this.authService.emailCertificate(req.body.code, req.cookies.authNum);
+    async validateMail(req, res) {
+        const validationResult = await this.authService.emailCertificate(req.body.code, req.body.authNumHash);
+        if (validationResult == 1) {
+            res.sendStatus(201);
+        }
+        else {
+            res.sendStatus(409);
+        }
+        return this.authService.emailCertificate(req.body.code, req.body.authNumHash);
     }
 };
 __decorate([
@@ -77,8 +85,9 @@ __decorate([
 __decorate([
     (0, common_1.Post)('validateMail'),
     __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "validateMail", null);
 AuthController = __decorate([

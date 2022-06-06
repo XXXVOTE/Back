@@ -10,6 +10,9 @@ export declare class AuthController {
     }>;
     register(req: CreateUserDto): Promise<void>;
     addCreateRole(req: any): Promise<void>;
-    authenticationMail(req: any, res: any): Promise<any>;
-    validateMail(req: any): Promise<boolean>;
+    authenticationMail(req: any, res: any): Promise<{
+        authNum: any;
+        res: number;
+    }>;
+    validateMail(req: any, res: any): Promise<1 | 0>;
 }
