@@ -137,8 +137,8 @@ export class AuthService {
 
   async emailCertificate(code: string, authNumHash: string) {
     // 암호화된 입력코드, 해시값 주면 검증
-    // console.log('code: ', code);
-    // console.log('authNumHash: ', authNumHash);
+    console.log('code: ', code);
+    console.log('authNumHash: ', authNumHash);
     var CryptoJS = require('crypto-js');
     // const decryptAES = (secretKey: string, encryptedText: string): string => {
     //   const secretKeyToBufferArray: Buffer = Buffer.from(secretKey, 'utf8');

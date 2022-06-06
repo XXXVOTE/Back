@@ -89,6 +89,8 @@ let AuthService = class AuthService {
         }
     }
     async emailCertificate(code, authNumHash) {
+        console.log('code: ', code);
+        console.log('authNumHash: ', authNumHash);
         var CryptoJS = require('crypto-js');
         var bytes = CryptoJS.AES.decrypt(authNumHash, process.env.SECRETKEY2);
         var authNum = bytes.toString(CryptoJS.enc.Utf8);
