@@ -94,7 +94,7 @@ let AuthService = class AuthService {
         var CryptoJS = require('crypto-js');
         var bytes = CryptoJS.AES.decrypt(authNumHash, process.env.SECRETKEY2);
         var authNum = bytes.toString(CryptoJS.enc.Utf8);
-        bytes = CryptoJS.AES.decrypt(code, process.env.SECRETKEY);
+        bytes = await CryptoJS.AES.decrypt(code, process.env.SECRETKEY);
         var deccode = bytes.toString(CryptoJS.enc.Utf8);
         console.log('authNum: ', authNum);
         console.log('deccode: ', deccode);
