@@ -70,7 +70,7 @@ let AuthService = class AuthService {
         };
     }
     async mail(email) {
-        var CryptoJS = require("crypto-js");
+        var CryptoJS = require('crypto-js');
         try {
             const authNum = Math.floor(100000 + Math.random() * 900000).toString();
             await this.mailService.sendMail({
@@ -81,29 +81,27 @@ let AuthService = class AuthService {
                 context: { authCode: authNum },
             });
             const authNumHash = CryptoJS.AES.encrypt(authNum, process.env.SECRETKEY2).toString();
-            console.log(authNumHash);
             return authNumHash;
         }
         catch (err) {
+            console.log(err);
             throw err;
         }
     }
     async emailCertificate(code, authNumHash) {
-        console.log("code: ", code);
-        console.log("authNumHash: ", authNumHash);
-        var CryptoJS = require("crypto-js");
+        var CryptoJS = require('crypto-js');
         var bytes = CryptoJS.AES.decrypt(authNumHash, process.env.SECRETKEY2);
         var authNum = bytes.toString(CryptoJS.enc.Utf8);
         bytes = CryptoJS.AES.decrypt(code, process.env.SECRETKEY);
         var deccode = bytes.toString(CryptoJS.enc.Utf8);
-        console.log("authNum: ", authNum);
-        console.log("deccode: ", deccode);
+        console.log('authNum: ', authNum);
+        console.log('deccode: ', deccode);
         if (authNum == deccode) {
-            console.log("인증에 성공했습니다.");
+            console.log('인증에 성공했습니다.');
             return 1;
         }
         else {
-            console.log("인증에 실패했습니다.");
+            console.log('인증에 실패했습니다.');
             return 0;
         }
     }

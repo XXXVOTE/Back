@@ -73,7 +73,7 @@ export class AuthService {
   // }
 
   async mail(email: string) {
-    var CryptoJS = require("crypto-js");
+    var CryptoJS = require('crypto-js');
     try {
       const authNum = Math.floor(100000 + Math.random() * 900000).toString(); // 6자리 인증번호 생성
 
@@ -89,13 +89,17 @@ export class AuthService {
 
       // const authNumHash = await bcrypt.hash(authNum, await bcrypt.genSalt());
 
-      const authNumHash = CryptoJS.AES.encrypt(authNum, process.env.SECRETKEY2).toString();
+      const authNumHash = CryptoJS.AES.encrypt(
+        authNum,
+        process.env.SECRETKEY2,
+      ).toString();
 
-      console.log(authNumHash);
+      // console.log(authNumHash);
 
       return authNumHash;
       // return res.status(201).send()
     } catch (err) {
+      console.log(err);
       throw err;
       // return res.status(500).send()
     }
@@ -133,9 +137,9 @@ export class AuthService {
 
   async emailCertificate(code: string, authNumHash: string) {
     // 암호화된 입력코드, 해시값 주면 검증
-    console.log("code: ", code);
-    console.log("authNumHash: ", authNumHash);
-    var CryptoJS = require("crypto-js");
+    // console.log('code: ', code);
+    // console.log('authNumHash: ', authNumHash);
+    var CryptoJS = require('crypto-js');
     // const decryptAES = (secretKey: string, encryptedText: string): string => {
     //   const secretKeyToBufferArray: Buffer = Buffer.from(secretKey, 'utf8');
     //   const ivParameter: Buffer = Buffer.from(secretKey, 'utf8');
@@ -155,20 +159,20 @@ export class AuthService {
     // let decryptedValue: string = decryptAES(secretKey, encryptedValue);
 
     // Decrypt
-    var bytes  = CryptoJS.AES.decrypt(authNumHash, process.env.SECRETKEY2);
+    var bytes = CryptoJS.AES.decrypt(authNumHash, process.env.SECRETKEY2);
     var authNum = bytes.toString(CryptoJS.enc.Utf8);
 
     bytes = CryptoJS.AES.decrypt(code, process.env.SECRETKEY);
     var deccode = bytes.toString(CryptoJS.enc.Utf8);
 
-    console.log("authNum: ", authNum);
-    console.log("deccode: ", deccode);
+    console.log('authNum: ', authNum);
+    console.log('deccode: ', deccode);
 
     if (authNum == deccode) {
-      console.log("인증에 성공했습니다.");
+      console.log('인증에 성공했습니다.');
       return 1;
     } else {
-      console.log("인증에 실패했습니다.");
+      console.log('인증에 실패했습니다.');
       return 0;
     }
 
