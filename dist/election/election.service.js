@@ -127,32 +127,35 @@ let ElectionService = class ElectionService {
         });
     }
     async vote(email, electionId, selected) {
-        const election = await this.prisma.getElection(electionId);
-        if (!(await this.checkValidDate(election))) {
-            throw new common_1.HttpException(`not valid date for Vote`, common_1.HttpStatus.CONFLICT);
-        }
-        console.log(selected);
-        const filename = `election${electionId}-${md5(email + new Date())}`;
-        (0, child_process_1.execSync)(`mkdir -p election/electionID-${electionId}/cipher`);
-        (0, child_process_1.execSync)(`cd election/electionID-${electionId} && ./UosVote voteAndEncrypt ${selected} ${filename}`);
-        let hash = '';
-        const options = {
-            pinataOptions: {
-                cidVersion: 0,
-            },
-        };
-        await this.pinata
-            .pinFromFS(`election/electionID-${electionId}/cipher/${filename}`, options)
-            .then((result) => {
-            hash = result.IpfsHash;
-        })
-            .catch(() => {
-            throw new common_1.HttpException('IPFS problem', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
-        });
-        (0, child_process_1.execSync)(`cd election/electionID-${electionId}/cipher && mv ${filename} ${hash}`);
         const gateway = new fabric_network_1.Gateway();
         try {
             const contract = await this.fabric.connectGateway(gateway, email);
+            const voted = await this.getMyBallot(email, electionId);
+            if (voted != null) {
+                throw new common_1.HttpException(`Alreeady Voted`, common_1.HttpStatus.CONFLICT);
+            }
+            const election = await this.prisma.getElection(electionId);
+            if (!(await this.checkValidDate(election))) {
+                throw new common_1.HttpException(`not valid date for Vote`, common_1.HttpStatus.CONFLICT);
+            }
+            const filename = `election${electionId}-${md5(email + new Date())}`;
+            (0, child_process_1.execSync)(`mkdir -p election/electionID-${electionId}/cipher`);
+            (0, child_process_1.execSync)(`cd election/electionID-${electionId} && ./UosVote voteAndEncrypt ${selected} ${filename}`);
+            let hash = '';
+            const options = {
+                pinataOptions: {
+                    cidVersion: 0,
+                },
+            };
+            await this.pinata
+                .pinFromFS(`election/electionID-${electionId}/cipher/${filename}`, options)
+                .then((result) => {
+                hash = result.IpfsHash;
+            })
+                .catch(() => {
+                throw new common_1.HttpException('IPFS problem', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
+            });
+            (0, child_process_1.execSync)(`cd election/electionID-${electionId}/cipher && mv ${filename} ${hash}`);
             await contract.submitTransaction('vote', String(electionId), hash);
         }
         catch (err) {
