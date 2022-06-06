@@ -46,13 +46,16 @@ export class AuthController {
       return { authNum: authNum, res: 201 };
     } catch (err) {
       // res.sendStatus(409);
-      return { authNum: "", res: 409 };
+      return { authNum: '', res: 409 };
     }
   }
 
   @Post('validateMail')
   async validateMail(@Request() req, @Res() res) {
-    const validationResult = await this.authService.emailCertificate(req.body.code, req.body.authNumHash);
+    const validationResult = await this.authService.emailCertificate(
+      req.body.code,
+      req.body.authNumHash,
+    );
     if (validationResult == 1) {
       res.sendStatus(201);
     } else {

@@ -89,21 +89,15 @@ let AuthService = class AuthService {
         }
     }
     async emailCertificate(code, authNumHash) {
-        console.log('code: ', code);
-        console.log('authNumHash: ', authNumHash);
         var CryptoJS = require('crypto-js');
-        var bytes = CryptoJS.AES.decrypt(authNumHash, process.env.SECRETKEY2);
+        var bytes = await CryptoJS.AES.decrypt(authNumHash, process.env.SECRETKEY2);
         var authNum = bytes.toString(CryptoJS.enc.Utf8);
         bytes = await CryptoJS.AES.decrypt(code, process.env.SECRETKEY);
         var deccode = bytes.toString(CryptoJS.enc.Utf8);
-        console.log('authNum: ', authNum);
-        console.log('deccode: ', deccode);
         if (authNum == deccode) {
-            console.log('인증에 성공했습니다.');
             return 1;
         }
         else {
-            console.log('인증에 실패했습니다.');
             return 0;
         }
     }

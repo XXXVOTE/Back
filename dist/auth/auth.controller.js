@@ -38,7 +38,7 @@ let AuthController = class AuthController {
             return { authNum: authNum, res: 201 };
         }
         catch (err) {
-            return { authNum: "", res: 409 };
+            return { authNum: '', res: 409 };
         }
     }
     async validateMail(req, res) {
