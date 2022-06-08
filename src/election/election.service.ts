@@ -278,7 +278,6 @@ export class ElectionService {
       );
 
       const ballots = this.fabric.toJSONObj(res.toString());
-
       return ballots;
     } catch (err) {
       // console.log(`Failed to run vote: ${err}`);
