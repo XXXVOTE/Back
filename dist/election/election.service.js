@@ -366,7 +366,7 @@ let ElectionService = class ElectionService {
         let resultFile = fs.readFileSync(`election/electionID-${electionId}/RESULTARR`);
         const result = new Int32Array(resultFile);
         const candidates = await this.prisma.getCandidates(electionId);
-        return result.slice(1, candidates.length);
+        return result.slice(1, candidates.length + 1);
     }
     async getResult(email, electionId) {
         const gateway = new fabric_network_1.Gateway();
