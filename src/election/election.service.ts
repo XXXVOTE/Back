@@ -236,7 +236,7 @@ export class ElectionService {
   }
   async encryptionKey(electionId: number) {
     const savedPK = fs
-      .readFileSync(`election/${electionId}/${electionId}-ENCRYPTION.txt`)
+      .readFileSync(`election/electionID-${electionId}/ENCRYPTION.txt`)
       .toString();
 
     return { savedPK };
