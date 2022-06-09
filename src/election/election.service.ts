@@ -259,32 +259,9 @@ export class ElectionService {
       }
 
       const filename = `election${electionId}-${md5(email + new Date())}`;
-      console.log(filename);
-      // const seal = await SEAL();
-      // const context = await this.makeContext(seal);
 
-      // const stat = fs.existSync(`election/electionID-${electionId}/cipher`);
-      // if (!stat.isDirectory()) {
-      //   fs.mkdirSync(`election/electionID-${electionId}/cipher`);
-      // }
-      const savedPK = fs
-        .readFileSync(`election/electionID-${electionId}/ENCRYPTION.txt`)
-        .toString();
-
-      // const publicKey = seal.PublicKey();
-      // publicKey.load(context, savedPK);
-      // const encryptor = seal.Encryptor(context, publicKey);
-      // const encoder = seal.BatchEncoder(context);
-
-      // const arr = new Int32Array(4096);
-      // arr[selected] = 1;
-      // const plainText = seal.PlainText();
-      // encoder.encode(arr, plainText);
-      // const cipherText = seal.CipherText();
-      // encryptor.encrypt(plainText, cipherText);
-      // const savedCipher = cipherText.save();
       fs.writeFileSync(`election/electionID-${electionId}/${filename}`, ballot);
-      // const ballotFile = fs.createReadStream(ballot);
+
       let hash = '';
 
       const options: any = {
@@ -518,12 +495,12 @@ export class ElectionService {
   }
 
   async decryptResult(email: string, electionId: number) {
-    // if (await this.checkValidDate(electionId)) {
-    //   throw new HttpException(
-    //     `not valid date for decryptResult`,
-    //     HttpStatus.CONFLICT,
-    //   );
-    // }
+    if (await this.checkValidDate(electionId)) {
+      throw new HttpException(
+        `not valid date for decryptResult`,
+        HttpStatus.CONFLICT,
+      );
+    }
     const seal = await SEAL();
     const context = await this.makeContext(seal);
     const encoder = seal.BatchEncoder(context);
@@ -550,33 +527,33 @@ export class ElectionService {
       'binary',
     );
 
-    // let hash = '';
-    // const options: any = {
-    //   pinataMetadata: {
-    //     name: `${electionId}-RESULT`,
-    //     keyvalues: {
-    //       electionId: electionId,
-    //     },
-    //   },
-    //   pinataOptions: {
-    //     cidVersion: 0,
-    //   },
-    // };
+    let hash = '';
+    const options: any = {
+      pinataMetadata: {
+        name: `${electionId}-RESULT`,
+        keyvalues: {
+          electionId: electionId,
+        },
+      },
+      pinataOptions: {
+        cidVersion: 0,
+      },
+    };
 
-    // await this.pinata
-    //   .pinFromFS(`election/electionID-${electionId}/RESULT`, options)
-    //   .then((result) => {
-    //     hash = result.IpfsHash;
-    //   })
-    //   .catch(() => {
-    //     //handle error here
-    //     throw new HttpException(
-    //       'IPFS problem',
-    //       HttpStatus.INTERNAL_SERVER_ERROR,
-    //     );
-    //   });
+    await this.pinata
+      .pinFromFS(`election/electionID-${electionId}/RESULT`, options)
+      .then((result) => {
+        hash = result.IpfsHash;
+      })
+      .catch(() => {
+        //handle error here
+        throw new HttpException(
+          'IPFS problem',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      });
 
-    // this.pushResult(email, electionId, hash);
+    this.pushResult(email, electionId, hash);
 
     return arr;
   }

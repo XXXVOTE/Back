@@ -188,10 +188,6 @@ let ElectionService = class ElectionService {
                 throw new common_1.HttpException(`not valid date for Vote`, common_1.HttpStatus.CONFLICT);
             }
             const filename = `election${electionId}-${(0, md5_1.default)(email + new Date())}`;
-            console.log(filename);
-            const savedPK = fs
-                .readFileSync(`election/electionID-${electionId}/ENCRYPTION.txt`)
-                .toString();
             fs.writeFileSync(`election/electionID-${electionId}/${filename}`, ballot);
             let hash = '';
             const options = {
@@ -339,6 +335,9 @@ let ElectionService = class ElectionService {
         }
     }
     async decryptResult(email, electionId) {
+        if (await this.checkValidDate(electionId)) {
+            throw new common_1.HttpException(`not valid date for decryptResult`, common_1.HttpStatus.CONFLICT);
+        }
         const seal = await (0, node_seal_1.default)();
         const context = await this.makeContext(seal);
         const encoder = seal.BatchEncoder(context);
@@ -357,6 +356,27 @@ let ElectionService = class ElectionService {
         decryptor.decrypt(result, decryptedPlainText);
         let arr = encoder.decode(decryptedPlainText);
         fs.writeFileSync(`election/electionID-${electionId}/RESULTARR`, arr, 'binary');
+        let hash = '';
+        const options = {
+            pinataMetadata: {
+                name: `${electionId}-RESULT`,
+                keyvalues: {
+                    electionId: electionId,
+                },
+            },
+            pinataOptions: {
+                cidVersion: 0,
+            },
+        };
+        await this.pinata
+            .pinFromFS(`election/electionID-${electionId}/RESULT`, options)
+            .then((result) => {
+            hash = result.IpfsHash;
+        })
+            .catch(() => {
+            throw new common_1.HttpException('IPFS problem', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
+        });
+        this.pushResult(email, electionId, hash);
         return arr;
     }
     async getElectionResult(electionId) {
