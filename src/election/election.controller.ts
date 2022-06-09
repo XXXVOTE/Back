@@ -19,10 +19,6 @@ import { ElectionService } from './election.service';
 export class ElectionController {
   constructor(private readonly electionService: ElectionService) {}
 
-  @Post(`/createKey`)
-  createKey(@Request() req) {
-    return this.electionService.createKey(req.body.electionId);
-  }
   @Post()
   createElection(@Request() req) {
     return this.electionService.createElection(
