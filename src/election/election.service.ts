@@ -283,11 +283,8 @@ export class ElectionService {
       // const cipherText = seal.CipherText();
       // encryptor.encrypt(plainText, cipherText);
       // const savedCipher = cipherText.save();
-      const Readable = require('stream').Readable;
-      const ballotFile = new Readable();
-      ballotFile._read = () => {}; // redundant? see update below
-      ballotFile.push(ballot);
-      ballotFile.push(null);
+      const ballotBuffer = Buffer.from(ballot, 'utf8');
+      const ballotFile = fs.createReadStream(ballotBuffer);
       // const ballotFile = fs.createReadStream(ballot);
       let hash = '';
 
