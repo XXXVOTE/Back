@@ -192,7 +192,11 @@ let ElectionService = class ElectionService {
             const savedPK = fs
                 .readFileSync(`election/electionID-${electionId}/ENCRYPTION.txt`)
                 .toString();
-            const ballotFile = fs.createReadStream(ballot);
+            const Readable = require('stream').Readable;
+            const ballotFile = new Readable();
+            ballotFile._read = () => { };
+            ballotFile.push(ballot);
+            ballotFile.push(null);
             let hash = '';
             const options = {
                 pinataMetadata: {
