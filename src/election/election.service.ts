@@ -302,6 +302,7 @@ export class ElectionService {
           hash = result.IpfsHash;
         })
         .catch((e) => {
+          console.log(e);
           throw new HttpException(
             'IPFS problem',
             HttpStatus.INTERNAL_SERVER_ERROR,
