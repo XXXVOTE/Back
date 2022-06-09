@@ -208,10 +208,10 @@ let ElectionService = class ElectionService {
                 .then((result) => {
                 hash = result.IpfsHash;
             })
-                .catch(() => {
+                .catch((e) => {
+                console.log(e);
                 throw new common_1.HttpException('IPFS problem', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
             });
-            fs.renameSync(`election/electionID-${electionId}/cipher/${filename}`, `election/electionID-${electionId}/cipher/${hash}`);
             await contract.submitTransaction('vote', String(electionId), hash);
             await this.addBallots(email, electionId, ballot);
         }

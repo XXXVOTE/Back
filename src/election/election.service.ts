@@ -300,18 +300,18 @@ export class ElectionService {
         .then((result) => {
           hash = result.IpfsHash;
         })
-        .catch(() => {
-          //handle error here
+        .catch((e) => {
+          console.log(e);
           throw new HttpException(
             'IPFS problem',
             HttpStatus.INTERNAL_SERVER_ERROR,
           );
         });
 
-      fs.renameSync(
-        `election/electionID-${electionId}/cipher/${filename}`,
-        `election/electionID-${electionId}/cipher/${hash}`,
-      );
+      // fs.renameSync(
+      //   `election/electionID-${electionId}/cipher/${filename}`,
+      //   `election/electionID-${electionId}/cipher/${hash}`,
+      // );
 
       await contract.submitTransaction('vote', String(electionId), hash);
       await this.addBallots(email, electionId, ballot);
