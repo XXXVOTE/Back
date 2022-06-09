@@ -31,7 +31,6 @@ export class HyperledgerService {
       'wallet',
     );
     try {
-      console.log('check', ccp);
       await gateway.connect(ccp, {
         wallet: wallet,
         identity: email,
@@ -43,6 +42,7 @@ export class HyperledgerService {
 
       return contract;
     } catch (err) {
+      console.log(err);
       throw new HttpException(
         'Failed to connect to HyperLedger',
         HttpStatus.INTERNAL_SERVER_ERROR,

@@ -25,7 +25,6 @@ let HyperledgerService = class HyperledgerService {
         const ccp = yaml.load(data);
         const wallet = await Wallets.newCouchDBWallet(`http://admin:password@${this.ipAddr}:5984`, 'wallet');
         try {
-            console.log('check', ccp);
             await gateway.connect(ccp, {
                 wallet: wallet,
                 identity: email,
@@ -36,6 +35,7 @@ let HyperledgerService = class HyperledgerService {
             return contract;
         }
         catch (err) {
+            console.log(err);
             throw new common_1.HttpException('Failed to connect to HyperLedger', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
