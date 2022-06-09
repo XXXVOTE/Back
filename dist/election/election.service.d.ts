@@ -36,6 +36,9 @@ export declare class ElectionService {
     makeContext(seal: any): Promise<any>;
     createKey(electionID: number): Promise<string>;
     saveKey(electionID: number): Promise<void>;
+    encryptionKey(electionId: number): Promise<{
+        savedPK: string;
+    }>;
     vote(email: string, electionId: number, ballot: string): Promise<void>;
     checkValidDate(election: any): Promise<boolean>;
     getBallots(email: string, electionId: number): Promise<any>;

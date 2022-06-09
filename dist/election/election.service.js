@@ -169,6 +169,12 @@ let ElectionService = class ElectionService {
                 throw err;
         });
     }
+    async encryptionKey(electionId) {
+        const savedPK = fs
+            .readFileSync(`election/${electionId}/${electionId}-ENCRYPTION.txt`)
+            .toString();
+        return { savedPK };
+    }
     async vote(email, electionId, ballot) {
         const gateway = new fabric_network_1.Gateway();
         try {

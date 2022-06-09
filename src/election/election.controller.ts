@@ -32,6 +32,11 @@ export class ElectionController {
     );
   }
 
+  @Get('/encryptionKey/:id')
+  encryptionKey(@Param('id') electionId, @Request() req) {
+    return this.electionService.encryptionKey(electionId);
+  }
+
   @Get('/ballot/:id')
   getBallots(@Param('id') electionId, @Request() req) {
     return this.electionService.getBallots(req.user.email, electionId);

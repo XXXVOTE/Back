@@ -13,6 +13,9 @@ export declare class ElectionController {
         quorum: number;
         total: number;
     }>;
+    encryptionKey(electionId: any, req: any): Promise<{
+        savedPK: string;
+    }>;
     getBallots(electionId: any, req: any): Promise<any>;
     getBallot(electionId: any, req: any): Promise<any>;
     result(electionId: any, req: any): Promise<{

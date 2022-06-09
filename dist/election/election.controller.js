@@ -26,6 +26,9 @@ let ElectionController = class ElectionController {
     createElection(req) {
         return this.electionService.createElection(req.user.email, req.body.createElectionDTO, req.body.candidates);
     }
+    encryptionKey(electionId, req) {
+        return this.electionService.encryptionKey(electionId);
+    }
     getBallots(electionId, req) {
         return this.electionService.getBallots(req.user.email, electionId);
     }
@@ -74,6 +77,14 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], ElectionController.prototype, "createElection", null);
+__decorate([
+    (0, common_1.Get)('/encryptionKey/:id'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", void 0)
+], ElectionController.prototype, "encryptionKey", null);
 __decorate([
     (0, common_1.Get)('/ballot/:id'),
     __param(0, (0, common_1.Param)('id')),

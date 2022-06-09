@@ -234,6 +234,13 @@ export class ElectionService {
       if (err) throw err;
     });
   }
+  async encryptionKey(electionId: number) {
+    const savedPK = fs
+      .readFileSync(`election/${electionId}/${electionId}-ENCRYPTION.txt`)
+      .toString();
+
+    return { savedPK };
+  }
 
   async vote(email: string, electionId: number, ballot: string) {
     const gateway = new Gateway();
