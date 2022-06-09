@@ -192,8 +192,7 @@ let ElectionService = class ElectionService {
             const savedPK = fs
                 .readFileSync(`election/electionID-${electionId}/ENCRYPTION.txt`)
                 .toString();
-            const ballotBuffer = Buffer.from(ballot, 'utf8');
-            const ballotFile = fs.createReadStream(ballotBuffer);
+            fs.writeFileSync(`election/electionID-${electionId}/${filename}`, ballot);
             let hash = '';
             const options = {
                 pinataMetadata: {
@@ -207,9 +206,10 @@ let ElectionService = class ElectionService {
                 },
             };
             await this.pinata
-                .pinFileToIPFS(ballotFile, options)
+                .pinFromFS(`election/electionID-${electionId}/${filename}`, options)
                 .then((result) => {
                 hash = result.IpfsHash;
+                fs.rmSync(`election/electionID-${electionId}/${filename}`);
             })
                 .catch((e) => {
                 console.log(e);

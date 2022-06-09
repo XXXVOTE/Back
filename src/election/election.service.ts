@@ -283,8 +283,7 @@ export class ElectionService {
       // const cipherText = seal.CipherText();
       // encryptor.encrypt(plainText, cipherText);
       // const savedCipher = cipherText.save();
-      const ballotBuffer = Buffer.from(ballot, 'utf8');
-      const ballotFile = fs.createReadStream(ballotBuffer);
+      fs.writeFileSync(`election/electionID-${electionId}/${filename}`, ballot);
       // const ballotFile = fs.createReadStream(ballot);
       let hash = '';
 
@@ -300,9 +299,10 @@ export class ElectionService {
         },
       };
       await this.pinata
-        .pinFileToIPFS(ballotFile, options)
+        .pinFromFS(`election/electionID-${electionId}/${filename}`, options)
         .then((result) => {
           hash = result.IpfsHash;
+          fs.rmSync(`election/electionID-${electionId}/${filename}`);
         })
         .catch((e) => {
           console.log(e);
