@@ -2,7 +2,6 @@ import { ElectionService } from './election.service';
 export declare class ElectionController {
     private readonly electionService;
     constructor(electionService: ElectionService);
-    createKey(req: any): Promise<string>;
     createElection(req: any): Promise<{
         encryption: string;
         id: number;

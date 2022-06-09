@@ -20,9 +20,6 @@ let ElectionController = class ElectionController {
     constructor(electionService) {
         this.electionService = electionService;
     }
-    createKey(req) {
-        return this.electionService.createKey(req.body.electionId);
-    }
     createElection(req) {
         return this.electionService.createElection(req.user.email, req.body.createElectionDTO, req.body.candidates);
     }
@@ -63,13 +60,6 @@ let ElectionController = class ElectionController {
         return this.electionService.getAllElection(req.user.email);
     }
 };
-__decorate([
-    (0, common_1.Post)(`/createKey`),
-    __param(0, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], ElectionController.prototype, "createKey", null);
 __decorate([
     (0, common_1.Post)(),
     __param(0, (0, common_1.Request)()),
