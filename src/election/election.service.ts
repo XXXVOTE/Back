@@ -591,7 +591,7 @@ export class ElectionService {
     const result = new Int32Array(resultFile);
 
     const candidates = await this.prisma.getCandidates(electionId);
-    return result.slice(1, candidates.length + 1);
+    return result.slice(0, candidates.length);
   }
 
   async getResult(email: string, electionId: number) {
