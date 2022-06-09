@@ -24,6 +24,7 @@ let HyperledgerService = class HyperledgerService {
         const yaml = require('js-yaml');
         const ccp = yaml.load(data);
         const wallet = await Wallets.newCouchDBWallet(`http://admin:password@${this.ipAddr}:5984`, 'wallet');
+        console.log('check');
         try {
             await gateway.connect(ccp, {
                 wallet: wallet,
