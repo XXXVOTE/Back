@@ -259,6 +259,7 @@ export class ElectionService {
       }
 
       const filename = `election${electionId}-${md5(email + new Date())}`;
+      console.log(filename);
       // const seal = await SEAL();
       // const context = await this.makeContext(seal);
 

@@ -188,6 +188,7 @@ let ElectionService = class ElectionService {
                 throw new common_1.HttpException(`not valid date for Vote`, common_1.HttpStatus.CONFLICT);
             }
             const filename = `election${electionId}-${(0, md5_1.default)(email + new Date())}`;
+            console.log(filename);
             const savedPK = fs
                 .readFileSync(`election/electionID-${electionId}/ENCRYPTION.txt`)
                 .toString();
