@@ -7,7 +7,8 @@ import { candidateDTO, CreateElectionrDto } from './election.dto';
 import { execSync } from 'child_process';
 import { S3 } from 'aws-sdk';
 import axios from 'axios';
-import * as md5 from 'md5';
+import md5 from 'md5';
+import SEAL from 'node-seal';
 const pinataSDK = require('@pinata/sdk');
 
 @Injectable()
@@ -21,6 +22,11 @@ export class ElectionService {
     '1ada54b3bad4005a46c7',
     'c9ffd9243831d564f3db4b0eff991e6d4eb1a8194c076efd6068e58963b9df46',
   );
+
+  s3 = new S3({
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  });
 
   async createElection(
     email: string,
@@ -54,17 +60,13 @@ export class ElectionService {
 
       await this.checkCandidateValidity(contract, createdElection.id);
 
-      const s3 = new S3({
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-      });
       const candidateProfilesPromise = candidates.map((candidate, idx) => {
         let filecontent = String(candidate.profile);
         let buf = Buffer.from(
           filecontent.replace(/^data:image\/\w+;base64,/, ''),
           'base64',
         );
-        return s3
+        return this.s3
           .upload({
             Bucket: 'uosvotepk',
             Key: `candidate/electionID-${createdElection.id}/candidate${idx}-profile`,
@@ -100,10 +102,11 @@ export class ElectionService {
 
       await Promise.all(candidatesForLedger);
 
-      await this.createKey(createdElection.id);
+      const savedPK = await this.createKey(createdElection.id);
       await this.saveKey(createdElection.id);
 
-      return createdElection;
+      // createdElection.encryption = savedPK;
+      return { ...createdElection, encryption: savedPK };
     } catch (err) {
       console.log(`Failed to run CreateElection: ${err}`);
       throw err;
@@ -153,27 +156,72 @@ export class ElectionService {
     return elections;
   }
 
+  async makeContext(seal) {
+    const schemeType = seal.SchemeType.bfv;
+    const securityLevel = seal.SecurityLevel.tc128;
+    const polyModulusDegree = 4096;
+    const bitSizes = [36, 36, 37];
+    const bitSize = 20;
+    const parms = seal.EncryptionParameters(schemeType);
+
+    parms.setPolyModulusDegree(polyModulusDegree);
+
+    // Create a suitable set of CoeffModulus primes
+    parms.setCoeffModulus(
+      seal.CoeffModulus.Create(polyModulusDegree, Int32Array.from(bitSizes)),
+    );
+
+    // Set the PlainModulus to a prime of bitSize 20.
+    parms.setPlainModulus(
+      seal.PlainModulus.Batching(polyModulusDegree, bitSize),
+    );
+
+    const context = seal.Context(
+      parms, // Encryption Parameters
+      true, // ExpandModChain
+      securityLevel, // Enforce a security level
+    );
+
+    return context;
+  }
   async createKey(electionID: number) {
     try {
-      execSync(`mkdir -p election/electionID-${electionID}`);
-      execSync(`cp UosVote election/electionID-${electionID}/`);
-      execSync(`cd election/electionID-${electionID} && ./UosVote saveKey`);
-      // let res = execSync(`./election/electionID-${electionID}/UosVote saveKey`);
+      const seal = await SEAL();
+      const context = await this.makeContext(seal);
+      const keyGenerator = seal.KeyGenerator(context);
+      const publicKey = keyGenerator.createPublicKey();
+      const savedPK = publicKey.save();
+      const encoder = seal.BatchEncoder(context);
 
+      if (!fs.existsSync(`election/electionID-${electionID}`))
+        fs.mkdirSync(`election/electionID-${electionID}`);
+      fs.writeFileSync(
+        `election/electionID-${electionID}/ENCRYPTION.txt`,
+        savedPK,
+      );
+      const secretKey = keyGenerator.secretKey();
+      const savedSK = secretKey.save();
+      console.log(savedSK);
+      fs.writeFileSync(`election/electionID-${electionID}/SECRET.txt`, savedSK);
+
+      const encryptor = seal.Encryptor(context, publicKey, secretKey);
+      const zeroPlain = seal.PlainText();
+      encoder.encode(Int32Array.from([0]), zeroPlain);
+      const result = seal.CipherText();
+      encryptor.encrypt(zeroPlain, result);
+
+      const resultSave = result.save();
+      fs.writeFileSync(`election/electionID-${electionID}/RESULT`, resultSave);
       // console.log(res.toString('utf8'));
+
+      return savedPK;
     } catch (err) {
-      console.log('create Key error', err);
+      throw err;
+      // console.log('create Key error', err);
     }
   }
 
   async saveKey(electionID: number) {
-    console.log(process.cwd());
-
-    const s3 = new S3({
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    });
-
     const encryption = {
       Bucket: 'uosvotepk',
       Key: `election/${electionID}/${electionID}-ENCRYPTION.txt`,
@@ -181,23 +229,13 @@ export class ElectionService {
         `election/electionID-${electionID}/ENCRYPTION.txt`,
       ),
     };
-    const multiplication = {
-      Bucket: 'uosvotepk',
-      Key: `election/${electionID}/${electionID}-MULTIPLICATION.txt`,
-      Body: fs.createReadStream(
-        `election/electionID-${electionID}/MULTIPLICATION.txt`,
-      ),
-    };
 
-    s3.upload(encryption, (err: any, data: any) => {
-      if (err) throw err;
-    });
-    s3.upload(multiplication, (err: any, data: any) => {
+    this.s3.upload(encryption, (err: any, data: any) => {
       if (err) throw err;
     });
   }
 
-  async vote(email: string, electionId: number, selected: number) {
+  async vote(email: string, electionId: number, ballot: string) {
     const gateway = new Gateway();
 
     try {
@@ -214,21 +252,44 @@ export class ElectionService {
       }
 
       const filename = `election${electionId}-${md5(email + new Date())}`;
-      execSync(`mkdir -p election/electionID-${electionId}/cipher`);
-      execSync(
-        `cd election/electionID-${electionId} && ./UosVote voteAndEncrypt ${selected} ${filename}`,
-      );
+      // const seal = await SEAL();
+      // const context = await this.makeContext(seal);
+
+      // const stat = fs.existSync(`election/electionID-${electionId}/cipher`);
+      // if (!stat.isDirectory()) {
+      //   fs.mkdirSync(`election/electionID-${electionId}/cipher`);
+      // }
+      const savedPK = fs
+        .readFileSync(`election/electionID-${electionId}/ENCRYPTION.txt`)
+        .toString();
+
+      // const publicKey = seal.PublicKey();
+      // publicKey.load(context, savedPK);
+      // const encryptor = seal.Encryptor(context, publicKey);
+      // const encoder = seal.BatchEncoder(context);
+
+      // const arr = new Int32Array(4096);
+      // arr[selected] = 1;
+      // const plainText = seal.PlainText();
+      // encoder.encode(arr, plainText);
+      // const cipherText = seal.CipherText();
+      // encryptor.encrypt(plainText, cipherText);
+      // const savedCipher = cipherText.save();
+      const ballotFile = fs.createReadStream(ballot);
       let hash = '';
+
       const options: any = {
+        pinataMetadata: {
+          keyvalues: {
+            electionId: electionId,
+          },
+        },
         pinataOptions: {
           cidVersion: 0,
         },
       };
       await this.pinata
-        .pinFromFS(
-          `election/electionID-${electionId}/cipher/${filename}`,
-          options,
-        )
+        .pinFileToIPFS(ballotFile, options)
         .then((result) => {
           hash = result.IpfsHash;
         })
@@ -240,13 +301,15 @@ export class ElectionService {
           );
         });
 
-      execSync(
-        `cd election/electionID-${electionId}/cipher && mv ${filename} ${hash}`,
+      fs.renameSync(
+        `election/electionID-${electionId}/cipher/${filename}`,
+        `election/electionID-${electionId}/cipher/${hash}`,
       );
 
       await contract.submitTransaction('vote', String(electionId), hash);
+      await this.addBallots(email, electionId, ballot);
     } catch (err) {
-      // console.log(`Failed to run vote: ${err}`);
+      console.log(`Failed to run vote: ${err}`);
 
       throw err;
     } finally {
@@ -340,17 +403,9 @@ export class ElectionService {
     }
   }
 
-  async addBallots(email: string, electionId: number) {
-    const s3 = new S3({
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    });
-
-    const stat = fs.statSync(
-      `election/electionID-${electionId}/ENCRYPTION.txt`,
-    );
-    if (!stat.isFile()) {
-      s3.getObject(
+  async addBallots(email: string, electionId: number, ballot: string) {
+    if (!fs.existsSync(`election/electionID-${electionId}/ENCRYPTION.txt`)) {
+      this.s3.getObject(
         {
           Bucket: 'uosvotepk',
           Key: `election/${electionId}/${electionId}-ENCRYPTION.txt`,
@@ -366,7 +421,26 @@ export class ElectionService {
         },
       );
     }
-    // execSync(`mkdir -p election/electionID-${electionId}/cipher`);
+    // let queryString =
+    //   '?' +
+    //   `metadata[keyvalues]={"electionId":{"value":${electionId},"op":"eq"}}`;
+    // const url = `https://api.pinata.cloud/data/pinList${queryString}`;
+    // console.log(url);
+    // await axios
+    //   .get(url, {
+    //     headers: {
+    //       pinata_api_key: '1ada54b3bad4005a46c7',
+    //       pinata_secret_api_key:
+    //         'c9ffd9243831d564f3db4b0eff991e6d4eb1a8194c076efd6068e58963b9df46',
+    //     },
+    //   })
+    //   .then(function (response) {
+    //     console.log(response.data);
+    //   })
+    //   .catch(function (error) {
+    //     console.log(error);
+    //     //handle error here
+    //   });
 
     // const ballots = await this.getBallots(email, electionId);
 
@@ -388,34 +462,31 @@ export class ElectionService {
     // await Promise.all(getBallotFile);
 
     try {
-      execSync(`cd election/electionID-${electionId} && ./UosVote addBallots`);
-      // let res = execSync(`./election/electionID-${electionID}/UosVote saveKey`);
-      let hash = '';
-      const options: any = {
-        pinataMetadata: {
-          name: `${electionId}-RESULT`,
-        },
-        pinataOptions: {
-          cidVersion: 0,
-        },
-      };
+      const seal = await SEAL();
+      const context = await this.makeContext(seal);
+      const savedPK = fs
+        .readFileSync(`election/electionID-${electionId}/ENCRYPTION.txt`)
+        .toString();
 
-      await this.pinata
-        .pinFromFS(`election/electionID-${electionId}/RESULT`, options)
-        .then((result) => {
-          hash = result.IpfsHash;
-        })
-        .catch(() => {
-          //handle error here
-          throw new HttpException(
-            'IPFS problem',
-            HttpStatus.INTERNAL_SERVER_ERROR,
-          );
-        });
+      const publicKey = seal.PublicKey();
+      publicKey.load(context, savedPK);
+      const encryptor = seal.Encryptor(context, publicKey);
+      const encoder = seal.BatchEncoder(context);
+      const evaluator = seal.Evaluator(context);
 
-      this.pushResult(email, electionId, hash);
+      let savedResult = fs
+        .readFileSync(`election/electionID-${electionId}/RESULT`)
+        .toString();
+      const result = seal.CipherText();
+      result.load(context, savedResult);
+      const cipher = seal.CipherText();
+      cipher.load(context, ballot);
+      evaluator.add(cipher, result, result);
+
+      savedResult = result.save();
+      fs.writeFileSync(`election/electionID-${electionId}/RESULT`, savedResult);
     } catch (err) {
-      console.log('create Key error', err);
+      console.log('addBallot error', err);
     }
   }
 
@@ -435,23 +506,83 @@ export class ElectionService {
     }
   }
 
-  async decryptResult(electionId: number) {
-    execSync(`cd election/electionID-${electionId} && ./UosVote decryptResult`);
+  async decryptResult(email: string, electionId: number) {
+    // if (await this.checkValidDate(electionId)) {
+    //   throw new HttpException(
+    //     `not valid date for decryptResult`,
+    //     HttpStatus.CONFLICT,
+    //   );
+    // }
+    const seal = await SEAL();
+    const context = await this.makeContext(seal);
+    const encoder = seal.BatchEncoder(context);
+    const sk = seal.SecretKey();
+    const savedSK = fs
+      .readFileSync(`election/electionID-${electionId}/SECRET.txt`)
+      .toString();
+    sk.load(context, savedSK);
+
+    const decryptor = seal.Decryptor(context, sk);
+
+    const savedResult = fs
+      .readFileSync(`election/electionID-${electionId}/RESULT`)
+      .toString();
+    const result = seal.CipherText();
+    result.load(context, savedResult);
+
+    const decryptedPlainText = seal.PlainText();
+    decryptor.decrypt(result, decryptedPlainText);
+    let arr = encoder.decode(decryptedPlainText);
+    fs.writeFileSync(
+      `election/electionID-${electionId}/RESULTARR`,
+      arr,
+      'binary',
+    );
+
+    // let hash = '';
+    // const options: any = {
+    //   pinataMetadata: {
+    //     name: `${electionId}-RESULT`,
+    //     keyvalues: {
+    //       electionId: electionId,
+    //     },
+    //   },
+    //   pinataOptions: {
+    //     cidVersion: 0,
+    //   },
+    // };
+
+    // await this.pinata
+    //   .pinFromFS(`election/electionID-${electionId}/RESULT`, options)
+    //   .then((result) => {
+    //     hash = result.IpfsHash;
+    //   })
+    //   .catch(() => {
+    //     //handle error here
+    //     throw new HttpException(
+    //       'IPFS problem',
+    //       HttpStatus.INTERNAL_SERVER_ERROR,
+    //     );
+    //   });
+
+    // this.pushResult(email, electionId, hash);
+
+    return arr;
   }
 
   async getElectionResult(electionId: number) {
-    const stat = fs.statSync(`election/electionID-${electionId}/ResultVec`);
-    if (!stat.isFile()) {
+    if (!fs.existsSync(`election/electionID-${electionId}/RESULTARR`)) {
       throw new HttpException(`not made result yet`, HttpStatus.NOT_FOUND);
     }
     let result = fs
-      .readFileSync(`election/electionID-${electionId}/ResultVec`)
+      .readFileSync(`election/electionID-${electionId}/RESULTARR`)
       .toString()
       .split(' ');
 
-    const candidates = await this.prisma.getCandidates(electionId);
+    // const candidates = await this.prisma.getCandidates(electionId);
 
-    return result.slice(0, candidates.length);
+    // return result.slice(1, candidates.length);
+    return result;
   }
 
   async getResult(email: string, electionId: number) {

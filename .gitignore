@@ -39,5 +39,5 @@ lerna-debug.log*
 !.vscode/extensions.json
 
 localnetwork.yaml
-network.yaml
+# network.yaml
 src/wallet

@@ -20,6 +20,9 @@ let ElectionController = class ElectionController {
     constructor(electionService) {
         this.electionService = electionService;
     }
+    createKey(req) {
+        return this.electionService.createKey(req.body.electionId);
+    }
     createElection(req) {
         return this.electionService.createElection(req.user.email, req.body.createElectionDTO, req.body.candidates);
     }
@@ -38,20 +41,14 @@ let ElectionController = class ElectionController {
     getVoterNum(electionId, req) {
         return this.electionService.getVoterNum(req.user.email, electionId);
     }
-    addBallot(electionId, req) {
-        if (req.user.role != 'admin') {
-            throw new common_1.HttpException('unauthorized', common_1.HttpStatus.UNAUTHORIZED);
-        }
-        return this.electionService.addBallots(req.user.email, electionId);
-    }
     decrypt(electionId, req) {
         if (req.user.role != 'admin') {
             throw new common_1.HttpException('unauthorized', common_1.HttpStatus.UNAUTHORIZED);
         }
-        return this.electionService.decryptResult(electionId);
+        return this.electionService.decryptResult(req.user.email, electionId);
     }
     vote(electionId, req) {
-        return this.electionService.vote(req.user.email, parseInt(electionId), parseInt(req.body.selected));
+        return this.electionService.vote(req.user.email, parseInt(electionId), req.body.ballot);
     }
     editElection(electionId, req) {
         return this.electionService.extendEndDate(req.user.email, parseInt(electionId), req.body.newEndDate);
@@ -63,6 +60,13 @@ let ElectionController = class ElectionController {
         return this.electionService.getAllElection(req.user.email);
     }
 };
+__decorate([
+    (0, common_1.Post)(`/createKey`),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], ElectionController.prototype, "createKey", null);
 __decorate([
     (0, common_1.Post)(),
     __param(0, (0, common_1.Request)()),
@@ -110,14 +114,6 @@ __decorate([
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", void 0)
 ], ElectionController.prototype, "getVoterNum", null);
-__decorate([
-    (0, common_1.Post)('/addballot/:id'),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
-    __metadata("design:returntype", void 0)
-], ElectionController.prototype, "addBallot", null);
 __decorate([
     (0, common_1.Post)('/decryptResult/:id'),
     __param(0, (0, common_1.Param)('id')),

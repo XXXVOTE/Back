@@ -1,0 +1,101 @@
+name: 'fabric-ca'
+version: '1.0'
+channels:
+  mychannel:
+    orderers:
+      - orderer1-org0
+      - orderer2-org0
+      - orderer3-org0
+      - orderer4-org0
+    peers:
+      peer1-org1:
+        endorsingPeer: true
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: true
+      peer2-org1:
+        endorsingPeer: true
+        chaincodeQuery: false
+        ledgerQuery: true
+        eventSource: false
+      peer3-org1:
+        endorsingPeer: true
+        chaincodeQuery: false
+        ledgerQuery: true
+        eventSource: false
+      peer4-org1:
+        endorsingPeer: true
+        chaincodeQuery: false
+        ledgerQuery: true
+        eventSource: false
+
+organizations:
+  org1:
+    mspid: org1MSP
+    peers:
+      - peer1-org1
+      - peer2-org1
+      - peer3-org1
+      - peer4-org1
+    # certificateAuthorities:
+    #   - ca-org1
+    # adminPrivateKey:
+    #   path: /etc/hyperledger/org1/admin/msp/keystore/b5f152cfeab691568fb3ef39f02052488362d06b16e440169b14f13b08a5b973_sk
+    # signedCert:
+    #   path: /etc/hyperledger/org1/admin/msp/signcerts/cert.pem
+
+orderers:
+  orderer1-org0:
+    url: grpcs://54.180.90.224:6050
+    grpcOptions:
+      ssl-target-name-override: orderer1-org0
+    tlsCACerts:
+      path: crypto-config/org0/msp/tlscacerts/tls-ca-cert.pem
+  orderer2-org0:
+    url: grpcs://3.34.125.8:8050
+    grpcOptions:
+      ssl-target-name-override: orderer2-org0
+    tlsCACerts:
+      path: crypto-config/org0/msp/tlscacerts/tls-ca-cert.pem
+  orderer3-org0:
+    url: grpcs://54.180.101.86:9050
+    grpcOptions:
+      ssl-target-name-override: orderer3-org0
+    tlsCACerts:
+      path: crypto-config/org0/msp/tlscacerts/tls-ca-cert.pem
+  orderer4-org0:
+    url: grpcs://3.34.129.32:10050
+    grpcOptions:
+      ssl-target-name-override: orderer4-org0
+    tlsCACerts:
+      path: crypto-config/org0/msp/tlscacerts/tls-ca-cert.pem
+
+peers:
+  peer1-org1:
+    url: grpcs://54.180.90.224:6051
+    grpcOptions:
+      ssl-target-name-override: peer1-org1
+    tlsCACerts:
+      path: crypto-config/org1/msp/tlscacerts/tls-ca-cert.pem
+
+  peer2-org1:
+    url: grpcs://3.34.125.8:8051
+    grpcOptions:
+      ssl-target-name-override: peer2-org1
+      request-timeout: 120001
+    tlsCACerts:
+      path: crypto-config/org1/msp/tlscacerts/tls-ca-cert.pem
+  peer3-org1:
+    url: grpcs://54.180.101.86:9051
+    grpcOptions:
+      ssl-target-name-override: peer3-org1
+      request-timeout: 120001
+    tlsCACerts:
+      path: crypto-config/org1/msp/tlscacerts/tls-ca-cert.pem
+  peer4-org1:
+    url: grpcs://3.34.129.32:10051
+    grpcOptions:
+      ssl-target-name-override: peer4-org1
+      request-timeout: 120001
+    tlsCACerts:
+      path: crypto-config/org1/msp/tlscacerts/tls-ca-cert.pem

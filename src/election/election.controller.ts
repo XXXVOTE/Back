@@ -19,6 +19,10 @@ import { ElectionService } from './election.service';
 export class ElectionController {
   constructor(private readonly electionService: ElectionService) {}
 
+  @Post(`/createKey`)
+  createKey(@Request() req) {
+    return this.electionService.createKey(req.body.electionId);
+  }
   @Post()
   createElection(@Request() req) {
     return this.electionService.createElection(
@@ -53,20 +57,20 @@ export class ElectionController {
     return this.electionService.getVoterNum(req.user.email, electionId);
   }
 
-  @Post('/addballot/:id')
-  addBallot(@Param('id') electionId, @Request() req) {
-    if (req.user.role != 'admin') {
-      throw new HttpException('unauthorized', HttpStatus.UNAUTHORIZED);
-    }
-    return this.electionService.addBallots(req.user.email, electionId);
-  }
+  // @Post('/addballot/:id')
+  // addBallot(@Param('id') electionId, @Request() req) {
+  //   if (req.user.role != 'admin') {
+  //     throw new HttpException('unauthorized', HttpStatus.UNAUTHORIZED);
+  //   }
+  //   return this.electionService.addBallots(req.user.email, electionId);
+  // }
 
   @Post('/decryptResult/:id')
   decrypt(@Param('id') electionId, @Request() req) {
     if (req.user.role != 'admin') {
       throw new HttpException('unauthorized', HttpStatus.UNAUTHORIZED);
     }
-    return this.electionService.decryptResult(electionId);
+    return this.electionService.decryptResult(req.user.email, electionId);
   }
 
   @Post('/:id')
@@ -74,7 +78,7 @@ export class ElectionController {
     return this.electionService.vote(
       req.user.email,
       parseInt(electionId),
-      parseInt(req.body.selected),
+      req.body.ballot,
     );
   }
 
