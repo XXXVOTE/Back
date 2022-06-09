@@ -287,6 +287,7 @@ export class ElectionService {
 
       const options: any = {
         pinataMetadata: {
+          name: filename,
           keyvalues: {
             electionId: electionId,
           },
@@ -301,7 +302,6 @@ export class ElectionService {
           hash = result.IpfsHash;
         })
         .catch((e) => {
-          console.log(e);
           throw new HttpException(
             'IPFS problem',
             HttpStatus.INTERNAL_SERVER_ERROR,

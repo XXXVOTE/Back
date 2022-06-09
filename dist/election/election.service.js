@@ -195,6 +195,7 @@ let ElectionService = class ElectionService {
             let hash = '';
             const options = {
                 pinataMetadata: {
+                    name: filename,
                     keyvalues: {
                         electionId: electionId,
                     },
@@ -209,7 +210,6 @@ let ElectionService = class ElectionService {
                 hash = result.IpfsHash;
             })
                 .catch((e) => {
-                console.log(e);
                 throw new common_1.HttpException('IPFS problem', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
             });
             await contract.submitTransaction('vote', String(electionId), hash);
