@@ -302,7 +302,7 @@ export class ElectionService {
         .pinFromFS(`election/electionID-${electionId}/${filename}`, options)
         .then((result) => {
           hash = result.IpfsHash;
-          fs.rmSync(`election/electionID-${electionId}/${filename}`);
+          fs.rm(`election/electionID-${electionId}/${filename}`, () => {});
         })
         .catch((e) => {
           console.log(e);
