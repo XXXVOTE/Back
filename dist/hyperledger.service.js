@@ -24,13 +24,13 @@ let HyperledgerService = class HyperledgerService {
         const yaml = require('js-yaml');
         const ccp = yaml.load(data);
         const wallet = await Wallets.newCouchDBWallet(`http://admin:password@${this.ipAddr}:5984`, 'wallet');
-        console.log('check');
         try {
             await gateway.connect(ccp, {
                 wallet: wallet,
                 identity: email,
                 discovery: { enabled: false, asLocalhost: false },
             });
+            console.log('check');
             const network = await gateway.getNetwork('mychannel');
             const contract = network.getContract('votecc');
             return contract;
