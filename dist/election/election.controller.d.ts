@@ -20,7 +20,7 @@ export declare class ElectionController {
     result(electionId: any, req: any): Promise<{
         result: any;
     }>;
-    electionRes(electionId: any, req: any): Promise<string[]>;
+    electionRes(electionId: any, req: any): Promise<Int32Array>;
     getVoterNum(electionId: any, req: any): Promise<any>;
     decrypt(electionId: any, req: any): Promise<Int32Array | Uint32Array>;
     vote(electionId: any, req: any): Promise<void>;

@@ -585,15 +585,13 @@ export class ElectionService {
     if (!fs.existsSync(`election/electionID-${electionId}/RESULTARR`)) {
       throw new HttpException(`not made result yet`, HttpStatus.NOT_FOUND);
     }
-    let result = fs
-      .readFileSync(`election/electionID-${electionId}/RESULTARR`)
-      .toString()
-      .split(' ');
+    let resultFile = fs.readFileSync(
+      `election/electionID-${electionId}/RESULTARR`,
+    );
+    const result = new Int32Array(resultFile);
 
-    // const candidates = await this.prisma.getCandidates(electionId);
-
-    // return result.slice(1, candidates.length);
-    return result;
+    const candidates = await this.prisma.getCandidates(electionId);
+    return result.slice(1, candidates.length);
   }
 
   async getResult(email: string, electionId: number) {

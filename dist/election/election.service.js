@@ -363,11 +363,10 @@ let ElectionService = class ElectionService {
         if (!fs.existsSync(`election/electionID-${electionId}/RESULTARR`)) {
             throw new common_1.HttpException(`not made result yet`, common_1.HttpStatus.NOT_FOUND);
         }
-        let result = fs
-            .readFileSync(`election/electionID-${electionId}/RESULTARR`)
-            .toString()
-            .split(' ');
-        return result;
+        let resultFile = fs.readFileSync(`election/electionID-${electionId}/RESULTARR`);
+        const result = new Int32Array(resultFile);
+        const candidates = await this.prisma.getCandidates(electionId);
+        return result.slice(1, candidates.length);
     }
     async getResult(email, electionId) {
         const gateway = new fabric_network_1.Gateway();
