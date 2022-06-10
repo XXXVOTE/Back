@@ -205,14 +205,13 @@ let ElectionService = class ElectionService {
                 .pinFromFS(`election/electionID-${electionId}/${filename}`, options)
                 .then((result) => {
                 hash = result.IpfsHash;
-                fs.rm(`election/electionID-${electionId}/${filename}`, () => { });
             })
                 .catch((e) => {
                 console.log(e);
                 throw new common_1.HttpException('IPFS problem', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
             });
+            fs.renameSync(`election/electionID-${electionId}/cipher/${filename}`, `election/electionID-${electionId}/cipher/${hash}`);
             await contract.submitTransaction('vote', String(electionId), hash);
-            await this.addBallots(email, electionId, ballot);
         }
         catch (err) {
             console.log(`Failed to run vote: ${err}`);
@@ -283,7 +282,7 @@ let ElectionService = class ElectionService {
             gateway.disconnect();
         }
     }
-    async addBallots(email, electionId, ballot) {
+    async addBallots(email, electionId) {
         if (!fs.existsSync(`election/electionID-${electionId}/ENCRYPTION.txt`)) {
             this.s3.getObject({
                 Bucket: 'uosvotepk',
@@ -306,15 +305,16 @@ let ElectionService = class ElectionService {
             const encryptor = seal.Encryptor(context, publicKey);
             const encoder = seal.BatchEncoder(context);
             const evaluator = seal.Evaluator(context);
-            let savedResult = fs
-                .readFileSync(`election/electionID-${electionId}/RESULT`)
-                .toString();
+            const dir = fs.readdirSync('cipher');
             const result = seal.CipherText();
-            result.load(context, savedResult);
-            const cipher = seal.CipherText();
-            cipher.load(context, ballot);
-            evaluator.add(cipher, result, result);
-            savedResult = result.save();
+            result.load(context, fs.readFileSync(`cipher/${dir[0]}`).toString());
+            for (let i = 1; i < dir.length; i++) {
+                const op = seal.CipherText();
+                const cipherFile = fs.readFileSync(`cipher/${dir[i]}`).toString();
+                op.load(context, cipherFile);
+                evaluator.add(result, op, result);
+            }
+            const savedResult = result.save();
             fs.writeFileSync(`election/electionID-${electionId}/RESULT`, savedResult);
         }
         catch (err) {

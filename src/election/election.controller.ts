@@ -58,13 +58,13 @@ export class ElectionController {
     return this.electionService.getVoterNum(req.user.email, electionId);
   }
 
-  // @Post('/addballot/:id')
-  // addBallot(@Param('id') electionId, @Request() req) {
-  //   if (req.user.role != 'admin') {
-  //     throw new HttpException('unauthorized', HttpStatus.UNAUTHORIZED);
-  //   }
-  //   return this.electionService.addBallots(req.user.email, electionId);
-  // }
+  @Post('/addballot/:id')
+  addBallot(@Param('id') electionId, @Request() req) {
+    if (req.user.role != 'admin') {
+      throw new HttpException('unauthorized', HttpStatus.UNAUTHORIZED);
+    }
+    return this.electionService.addBallots(req.user.email, electionId);
+  }
 
   @Post('/decryptResult/:id')
   decrypt(@Param('id') electionId, @Request() req) {

@@ -41,6 +41,12 @@ let ElectionController = class ElectionController {
     getVoterNum(electionId, req) {
         return this.electionService.getVoterNum(req.user.email, electionId);
     }
+    addBallot(electionId, req) {
+        if (req.user.role != 'admin') {
+            throw new common_1.HttpException('unauthorized', common_1.HttpStatus.UNAUTHORIZED);
+        }
+        return this.electionService.addBallots(req.user.email, electionId);
+    }
     decrypt(electionId, req) {
         if (req.user.role != 'admin') {
             throw new common_1.HttpException('unauthorized', common_1.HttpStatus.UNAUTHORIZED);
@@ -115,6 +121,14 @@ __decorate([
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", void 0)
 ], ElectionController.prototype, "getVoterNum", null);
+__decorate([
+    (0, common_1.Post)('/addballot/:id'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", void 0)
+], ElectionController.prototype, "addBallot", null);
 __decorate([
     (0, common_1.Post)('/decryptResult/:id'),
     __param(0, (0, common_1.Param)('id')),
