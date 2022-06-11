@@ -309,10 +309,14 @@ let ElectionService = class ElectionService {
             const evaluator = seal.Evaluator(context);
             const dir = fs.readdirSync(`election/electionID-${electionId}/cipher`);
             const result = seal.CipherText();
-            result.load(context, fs.readFileSync(`${dir[0]}`).toString());
+            result.load(context, fs
+                .readFileSync(`election/electionID-${electionId}/cipher/${dir[0]}`)
+                .toString());
             for (let i = 1; i < dir.length; i++) {
                 const op = seal.CipherText();
-                const cipherFile = fs.readFileSync(`${dir[i]}`).toString();
+                const cipherFile = fs
+                    .readFileSync(`election/electionID-${electionId}/cipher/${dir[i]}`)
+                    .toString();
                 op.load(context, cipherFile);
                 evaluator.add(result, op, result);
             }
