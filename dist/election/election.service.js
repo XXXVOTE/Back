@@ -188,7 +188,9 @@ let ElectionService = class ElectionService {
                 throw new common_1.HttpException(`not valid date for Vote`, common_1.HttpStatus.CONFLICT);
             }
             const filename = `election${electionId}-${(0, md5_1.default)(email + new Date())}`;
-            fs.writeFileSync(`election/electionID-${electionId}/${filename}`, ballot);
+            if (!fs.existsSync(`election/electionID-${electionId}/cipher`))
+                fs.mkdirSync(`election/electionID-${electionId}/cipher`);
+            fs.writeFileSync(`election/electionID-${electionId}/cipher/${filename}`, ballot);
             let hash = '';
             const options = {
                 pinataMetadata: {

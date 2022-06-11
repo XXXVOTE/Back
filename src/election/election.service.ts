@@ -260,7 +260,12 @@ export class ElectionService {
 
       const filename = `election${electionId}-${md5(email + new Date())}`;
 
-      fs.writeFileSync(`election/electionID-${electionId}/${filename}`, ballot);
+      if (!fs.existsSync(`election/electionID-${electionId}/cipher`))
+        fs.mkdirSync(`election/electionID-${electionId}/cipher`);
+      fs.writeFileSync(
+        `election/electionID-${electionId}/cipher/${filename}`,
+        ballot,
+      );
 
       let hash = '';
 
