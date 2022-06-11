@@ -363,16 +363,38 @@ let ElectionService = class ElectionService {
         let arr = encoder.decode(decryptedPlainText);
         fs.writeFileSync(`election/electionID-${electionId}/RESULTARR`, arr.toString());
         let hash = '';
+        const options = {
+            pinataMetadata: {
+                name: `${electionId}-RESULT`,
+                keyvalues: {
+                    electionId: electionId,
+                },
+            },
+            pinataOptions: {
+                cidVersion: 0,
+            },
+        };
+        await this.pinata
+            .pinFromFS(`election/electionID-${electionId}/RESULT`, options)
+            .then((result) => {
+            hash = result.IpfsHash;
+        })
+            .catch(() => {
+            throw new common_1.HttpException('IPFS problem', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
+        });
+        this.pushResult(email, electionId, hash);
         return arr;
     }
     async getElectionResult(electionId) {
         if (!fs.existsSync(`election/electionID-${electionId}/RESULTARR`)) {
             throw new common_1.HttpException(`not made result yet`, common_1.HttpStatus.NOT_FOUND);
         }
-        let resultFile = fs.readFileSync(`election/electionID-${electionId}/RESULTARR`);
-        const result = new Int32Array(resultFile);
+        let resultFile = fs
+            .readFileSync(`election/electionID-${electionId}/RESULTARR`)
+            .toString();
+        const result = resultFile.split(',');
         const candidates = await this.prisma.getCandidates(electionId);
-        return result;
+        return result.slice(0, candidates.length);
     }
     async getResult(email, electionId) {
         const gateway = new fabric_network_1.Gateway();
