@@ -204,7 +204,7 @@ let ElectionService = class ElectionService {
                 },
             };
             await this.pinata
-                .pinFromFS(`election/electionID-${electionId}/${filename}`, options)
+                .pinFromFS(`election/electionID-${electionId}/cipher/${filename}`, options)
                 .then((result) => {
                 hash = result.IpfsHash;
             })
