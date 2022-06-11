@@ -307,7 +307,7 @@ let ElectionService = class ElectionService {
             const encryptor = seal.Encryptor(context, publicKey);
             const encoder = seal.BatchEncoder(context);
             const evaluator = seal.Evaluator(context);
-            const dir = fs.readdirSync('cipher');
+            const dir = fs.readdirSync(`election/electionID-${electionId}/cipher`);
             const result = seal.CipherText();
             result.load(context, fs.readFileSync(`cipher/${dir[0]}`).toString());
             for (let i = 1; i < dir.length; i++) {
