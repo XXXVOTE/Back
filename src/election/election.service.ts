@@ -507,7 +507,7 @@ export class ElectionService {
   }
 
   async decryptResult(email: string, electionId: number) {
-    if (await this.checkValidDate(electionId)) {
+    if (!(await this.checkValidDate(electionId))) {
       throw new HttpException(
         `not valid date for decryptResult`,
         HttpStatus.CONFLICT,

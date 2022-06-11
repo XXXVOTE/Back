@@ -337,7 +337,7 @@ let ElectionService = class ElectionService {
         }
     }
     async decryptResult(email, electionId) {
-        if (await this.checkValidDate(electionId)) {
+        if (!(await this.checkValidDate(electionId))) {
             throw new common_1.HttpException(`not valid date for decryptResult`, common_1.HttpStatus.CONFLICT);
         }
         const seal = await (0, node_seal_1.default)();
