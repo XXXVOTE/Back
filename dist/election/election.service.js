@@ -361,7 +361,7 @@ let ElectionService = class ElectionService {
         const decryptedPlainText = seal.PlainText();
         decryptor.decrypt(result, decryptedPlainText);
         let arr = encoder.decode(decryptedPlainText);
-        fs.writeFileSync(`election/electionID-${electionId}/RESULTARR`, arr, 'binary');
+        fs.writeFileSync(`election/electionID-${electionId}/RESULTARR`, arr.toString());
         let hash = '';
         return arr;
     }

@@ -542,8 +542,7 @@ export class ElectionService {
     let arr = encoder.decode(decryptedPlainText);
     fs.writeFileSync(
       `election/electionID-${electionId}/RESULTARR`,
-      arr,
-      'binary',
+      arr.toString(),
     );
 
     let hash = '';
