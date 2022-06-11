@@ -472,12 +472,12 @@ export class ElectionService {
 
       const dir = fs.readdirSync(`election/electionID-${electionId}/cipher`);
       const result = seal.CipherText();
-      result.load(context, fs.readFileSync(`cipher/${dir[0]}`).toString());
+      result.load(context, fs.readFileSync(`${dir[0]}`).toString());
       for (let i = 1; i < dir.length; i++) {
         // console.log(i);
         const op = seal.CipherText();
         // console.log(cipher);
-        const cipherFile = fs.readFileSync(`cipher/${dir[i]}`).toString();
+        const cipherFile = fs.readFileSync(`${dir[i]}`).toString();
         op.load(context, cipherFile);
 
         evaluator.add(result, op, result); // Op (A), Op (B), Op (Dest)
