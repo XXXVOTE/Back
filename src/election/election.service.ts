@@ -547,32 +547,32 @@ export class ElectionService {
     );
 
     let hash = '';
-    const options: any = {
-      pinataMetadata: {
-        name: `${electionId}-RESULT`,
-        keyvalues: {
-          electionId: electionId,
-        },
-      },
-      pinataOptions: {
-        cidVersion: 0,
-      },
-    };
+    // const options: any = {
+    //   pinataMetadata: {
+    //     name: `${electionId}-RESULT`,
+    //     keyvalues: {
+    //       electionId: electionId,
+    //     },
+    //   },
+    //   pinataOptions: {
+    //     cidVersion: 0,
+    //   },
+    // };
 
-    await this.pinata
-      .pinFromFS(`election/electionID-${electionId}/RESULT`, options)
-      .then((result) => {
-        hash = result.IpfsHash;
-      })
-      .catch(() => {
-        //handle error here
-        throw new HttpException(
-          'IPFS problem',
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      });
+    // await this.pinata
+    //   .pinFromFS(`election/electionID-${electionId}/RESULT`, options)
+    //   .then((result) => {
+    //     hash = result.IpfsHash;
+    //   })
+    //   .catch(() => {
+    //     //handle error here
+    //     throw new HttpException(
+    //       'IPFS problem',
+    //       HttpStatus.INTERNAL_SERVER_ERROR,
+    //     );
+    //   });
 
-    this.pushResult(email, electionId, hash);
+    // this.pushResult(email, electionId, hash);
 
     return arr;
   }

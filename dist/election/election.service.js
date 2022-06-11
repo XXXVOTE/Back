@@ -363,26 +363,6 @@ let ElectionService = class ElectionService {
         let arr = encoder.decode(decryptedPlainText);
         fs.writeFileSync(`election/electionID-${electionId}/RESULTARR`, arr, 'binary');
         let hash = '';
-        const options = {
-            pinataMetadata: {
-                name: `${electionId}-RESULT`,
-                keyvalues: {
-                    electionId: electionId,
-                },
-            },
-            pinataOptions: {
-                cidVersion: 0,
-            },
-        };
-        await this.pinata
-            .pinFromFS(`election/electionID-${electionId}/RESULT`, options)
-            .then((result) => {
-            hash = result.IpfsHash;
-        })
-            .catch(() => {
-            throw new common_1.HttpException('IPFS problem', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
-        });
-        this.pushResult(email, electionId, hash);
         return arr;
     }
     async getElectionResult(electionId) {
