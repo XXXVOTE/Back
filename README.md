@@ -1,3 +1,3 @@
-# UOSVOTE 검증
+# XXXVOTE 검증
 
-https://github.com/UOSVOTE/validate 참고
+https://github.com/XXXVOTE/validate 참고
